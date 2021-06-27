@@ -31,14 +31,17 @@ void main() {
 }`;
 
 var gl;
-var mesh;
+var mesh = new Array();
+var assets = new Array();
+var vao = new Array();
+
 
 function main() {
 
   var program = null;
 
   var cubeNormalMatrix;
-  var cubeWorldMatrix = new Array();    //One world matrix for each cube...
+  var WorldMatrix = new Array();    //One world matrix for each cube...
 
   //define directional light
   var dirLightAlpha = -utils.degToRad(60);
@@ -58,9 +61,11 @@ function main() {
   var cubeRy = 0.0;
   var cubeRz = 0.0;
 
-  cubeWorldMatrix[0] = utils.MakeWorld( -3.0, 0.0, -1.5, 0.0, 0.0, 0.0, 0.5);
-  cubeWorldMatrix[1] = utils.MakeWorld( 3.0, 0.0, -1.5, 0.0, 0.0, 0.0, 0.5);
-  cubeWorldMatrix[2] = utils.MakeWorld( 0.0, 0.0, -3.0, 0.0, 0.0, 0.0, 0.5);
+  // Definition of the array containing the worldMatrixes of every object
+  for (i = 0; i < assets.length; i++) {
+    WorldMatrix[i] = utils.MakeWorld(-2 * i + 4, 0.0, -1.5, 0.0, 0.0, 0.0, 0.5);
+  }
+  console.log(WorldMatrix);
 
   utils.resizeCanvasToDisplaySize(gl.canvas);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -84,42 +89,37 @@ function main() {
   var perspectiveMatrix = utils.MakePerspective(90, gl.canvas.width/gl.canvas.height, 0.1, 100.0);
   var viewMatrix = utils.MakeView(3.0, 3.0, 2.5, -45.0, -40.0);
     
-  /**
-   * HERE!!!!!! 
-   */
-  //console.log(vertices);
-  //console.log(indices);
-  vertices = mesh.vertices;
-  uv = mesh.textures;
-  indices = mesh.indices;
-  normals = mesh.vertexNormals;
-  nIdx = indices.length;
-  console.log(indices.length);
-  console.log(mesh)
-  
+  // Creates a VAO for each object and it's respective buffers 
+  for (i = 0; i < assets.length; i++) {
+    vertices = mesh[i].vertices;
+    uv = mesh[i].textures;
+    indices = mesh[i].indices;
+    normals = mesh[i].vertexNormals;
+    nIdx = indices.length;
+    // console.log(indices.length);
+    // console.log(mesh[i])
 
-  var vao = gl.createVertexArray();
-  gl.bindVertexArray(vao);
-  var positionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-  //gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(positionAttributeLocation);
-  gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
+    vao[i] = gl.createVertexArray();
+    gl.bindVertexArray(vao[i]);
+    var positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(positionAttributeLocation);
+    gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
 
-  var normalBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
-  //gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(normalAttributeLocation);
-  gl.vertexAttribPointer(normalAttributeLocation, 3, gl.FLOAT, false, 0, 0);
+    var normalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(normalAttributeLocation);
+    gl.vertexAttribPointer(normalAttributeLocation, 3, gl.FLOAT, false, 0, 0);
 
-  var indexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-  var ind = new Uint16Array(indices);
-  console.log(ind)
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, ind, gl.STATIC_DRAW); 
-    
+    var indexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    var ind = new Uint16Array(indices);
+    // console.log(ind)
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, ind, gl.STATIC_DRAW);
+  }
+      
   drawScene();
 
   function animate(){
@@ -131,31 +131,32 @@ function main() {
       cubeRz += deltaC;
     }
 
-    cubeWorldMatrix[3] = utils.MakeWorld( 0.0, 0.0, 0.0, cubeRx, cubeRy, cubeRz, 1.0);
-    cubeNormalMatrix = utils.invertMatrix(utils.transposeMatrix(cubeWorldMatrix[3]));
+    WorldMatrix[3] = utils.MakeWorld( 0.0, 0.0, 0.0, cubeRx, cubeRy, cubeRz, 1.0);
+    cubeNormalMatrix = utils.invertMatrix(utils.transposeMatrix(WorldMatrix[3]));
     lastUpdateTime = currentTime;               
   }
 
   function drawScene() {
-    animate();
+    // animate();
 
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    for(i = 0; i < 4; i++){
-      var viewWorldMatrix = utils.multiplyMatrices(viewMatrix, cubeWorldMatrix[i]);
+    for(i = 0; i < assets.length; i++){
+      var viewWorldMatrix = utils.multiplyMatrices(viewMatrix, WorldMatrix[i]);
       var projectionMatrix = utils.multiplyMatrices(perspectiveMatrix, viewWorldMatrix);
       gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(projectionMatrix));
       
-      if (i < 3) gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(cubeWorldMatrix[i]));
-      else gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, 
-      utils.transposeMatrix(cubeNormalMatrix));
+      // if (i < 3) gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(cubeWorldMatrix[i]));
+      // else gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(cubeNormalMatrix));
+
+      gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(WorldMatrix[i]));
 
       gl.uniform3fv(materialDiffColorHandle, cubeMaterialColor);
       gl.uniform3fv(lightColorHandle,  directionalLightColor);
       gl.uniform3fv(lightDirectionHandle,  directionalLight);
 
-      gl.bindVertexArray(vao);
+      gl.bindVertexArray(vao[i]);
       gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0 );
     }
     
@@ -178,8 +179,16 @@ async function init(){
   }
 
   /* LOAD THE MESHES */
-  var objStr = await utils.get_objstr(assetDir+'cabinet.obj');
-  mesh = new OBJ.Mesh(objStr);
+  assets.push(assetDir + 'cabinet.obj');
+  assets.push(assetDir + 'hammer.obj');
+  for (i = 0; i < 5; i++) {
+    assets.push(assetDir + 'mole.obj');
+  }
+
+  for (i = 0; i < assets.length; i++) {
+    var objStr = await utils.get_objstr(assets[i]);
+    mesh[i] = new OBJ.Mesh(objStr);
+  } 
   
   main();
 }
