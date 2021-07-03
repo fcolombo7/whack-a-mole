@@ -1,7 +1,9 @@
 var gl;
+
 var baseDir;
 var shaderDir;
 var assetDir;
+
 var program;
 var meshes;
 
@@ -47,7 +49,6 @@ Node.prototype.updateWorldMatrix = function (matrix) {
 };
 
 
-
 function main() {
 
   //LIGHT DEFINITION
@@ -56,9 +57,6 @@ function main() {
   var directionalLight = [Math.cos(dirLightAlpha) * Math.cos(dirLightBeta),
   Math.sin(dirLightAlpha), Math.cos(dirLightAlpha) * Math.sin(dirLightBeta)];
   var directionalLightColor = [0.8, 1.0, 1.0];
-
-  //FIXME: check this line
-  //var numIdx = initSphere();
 
   //SET Global states (viewport size, viewport background color, Depth test)
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -73,7 +71,7 @@ function main() {
   var lightDirectionHandle = gl.getUniformLocation(program, 'lightDirection');
   var lightColorHandle = gl.getUniformLocation(program, 'lightColor');
   var normalMatrixPositionHandle = gl.getUniformLocation(program, 'nMatrix');
-  
+
   //Define a data structure containing all the VAO (one for each type of obj)
   var vao_arr = [];
   meshes.forEach(mesh => {
@@ -100,59 +98,109 @@ function main() {
 
   //Definition of the scene Graph
   var objects = [];
+  var sceneRoot = sceneGraphDefinition();
 
-  var cabinetSpace = new Node();
-  cabinetSpace.localMatrix = utils.MakeWorld(0, 0, 0, 90, 0, 0, 2.5);
-  var moleSpace = new Node();
-  moleSpace.localMatrix = utils.MakeTranslateMatrix(0, 1, 0.2);
-  
-  var cabinetNode = new Node();
-  //cabinetNode.localMatrix = utils.MakeRotateXMatrix(90);
-  cabinetNode.drawInfo = {
-    materialColor: [0.6, 0.6, 0.0],
-    programInfo: program,
-    bufferLength: meshes[0].indices.length,
-    vertexArray: vao_arr[0],
-  };
+  window.requestAnimationFrame(drawScene);
 
-  var hammerNode = new Node();
-  hammerNode.localMatrix = utils.MakeTranslateMatrix(-2, -1, 1);
-  hammerNode.drawInfo = {
-    materialColor: [0.2, 0.5, 0.8],
-    programInfo: program,
-    bufferLength: meshes[1].indices.length,
-    vertexArray: vao_arr[1],
-  };
+  function sceneGraphDefinition() {
+    //Here it is defined the scene graph with all the objects of the scene.
+    //the function returns the root of the graph. 
 
-  //FIXME: Up to now only one mole node for testing purposes.1
-  var moleNode = new Node();
-  //moleNode.localMatrix = utils.MakeTranslateMatrix(0, 1, 0.2);
-  moleNode.drawInfo = {
-    materialColor: [0.6, 0.6, 0.6],
-    programInfo: program,
-    bufferLength: meshes[2].indices.length,
-    vertexArray: vao_arr[2],
-  };
+    var cabinetSpace = new Node();
+    cabinetSpace.localMatrix = utils.MakeWorld(0, 0, 0, 90, 0, 0, 2.5);
+    var moleSpace = new Node();
+    moleSpace.localMatrix = utils.MakeTranslateMatrix(0, 1.1, 0.2);
 
-  cabinetNode.setParent(cabinetSpace);
-  hammerNode.setParent(cabinetSpace);
-  moleSpace.setParent(cabinetSpace);
-  moleNode.setParent(moleSpace);
-  
-  var objects = [
-    cabinetNode,
-    hammerNode,
-    moleNode,
-  ];
+    var cabinetNode = new Node();
+    //cabinetNode.localMatrix = utils.MakeRotateXMatrix(90);
+    cabinetNode.drawInfo = {
+      materialColor: [0.6, 0.6, 0.0],
+      programInfo: program,
+      bufferLength: meshes[0].indices.length,
+      vertexArray: vao_arr[0],
+    };
 
-  //End of the definition of the SceneGraph
+    var hammerNode = new Node();
+    hammerNode.localMatrix = utils.MakeTranslateMatrix(-2, -1, 1);
+    hammerNode.drawInfo = {
+      materialColor: [0.2, 0.5, 0.8],
+      programInfo: program,
+      bufferLength: meshes[1].indices.length,
+      vertexArray: vao_arr[1],
+    };
 
-  requestAnimationFrame(drawScene);
+    var mole1Node = new Node();
+    mole1Node.localMatrix = utils.MakeTranslateMatrix(-0.63523, 0, 0);
+    mole1Node.drawInfo = {
+      materialColor: [0.6, 0.6, 0.6],
+      programInfo: program,
+      bufferLength: meshes[2].indices.length,
+      vertexArray: vao_arr[2],
+    };
 
-  // Draw the scene.
-  function drawScene(time) {
-    time *= 0.001;
+    var mole2Node = new Node();
+    mole2Node.drawInfo = {
+      materialColor: [0.6, 0.6, 0.6],
+      programInfo: program,
+      bufferLength: meshes[2].indices.length,
+      vertexArray: vao_arr[2],
+    };
 
+    var mole3Node = new Node();
+    mole3Node.localMatrix = utils.MakeTranslateMatrix(0.6353, 0, 0);
+    mole3Node.drawInfo = {
+      materialColor: [0.6, 0.6, 0.6],
+      programInfo: program,
+      bufferLength: meshes[2].indices.length,
+      vertexArray: vao_arr[2],
+    };
+
+    var mole4Node = new Node();
+    mole4Node.localMatrix = utils.MakeTranslateMatrix(-0.31763, -0.1, 0.4429);
+    mole4Node.drawInfo = {
+      materialColor: [0.6, 0.6, 0.6],
+      programInfo: program,
+      bufferLength: meshes[2].indices.length,
+      vertexArray: vao_arr[2],
+    };
+
+    var mole5Node = new Node();
+    mole5Node.localMatrix = utils.MakeTranslateMatrix(+0.31763, -0.1, 0.4429);
+    mole5Node.drawInfo = {
+      materialColor: [0.6, 0.6, 0.6],
+      programInfo: program,
+      bufferLength: meshes[2].indices.length,
+      vertexArray: vao_arr[2],
+    };
+
+    //-0.31763, -0.1372, -0,5502
+    cabinetNode.setParent(cabinetSpace);
+    hammerNode.setParent(cabinetSpace);
+    moleSpace.setParent(cabinetSpace);
+    mole1Node.setParent(moleSpace);
+    mole2Node.setParent(moleSpace);
+    mole3Node.setParent(moleSpace);
+    mole4Node.setParent(moleSpace);
+    mole5Node.setParent(moleSpace);
+
+    objects = [
+      cabinetNode,
+      hammerNode,
+      mole1Node,
+      mole2Node,
+      mole3Node,
+      mole4Node,
+      mole5Node,
+    ];
+
+    return cabinetSpace;
+  }
+
+  function animate() {
+    //Here the transformation of each matrix
+  }
+
+  function drawScene() {
     gl.clearColor(0.85, 0.85, 0.85, 1.0); //TODO: what is it used for?
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -169,17 +217,8 @@ function main() {
 
     var viewProjectionMatrix = utils.multiplyMatrices(projectionMatrix, viewMatrix);
 
-    // update the local matrices for each object.
-    /*
-    earthOrbitNode.localMatrix = utils.multiplyMatrices(utils.MakeRotateYMatrix(0.3), earthOrbitNode.localMatrix);
-    moonOrbitNode.localMatrix = utils.multiplyMatrices(utils.MakeRotateYMatrix(0.6), moonOrbitNode.localMatrix);
-    sunNode.localMatrix = utils.multiplyMatrices(utils.MakeRotateYMatrix(0.05), sunNode.localMatrix);
-    earthNode.localMatrix = utils.multiplyMatrices(utils.MakeRotateYMatrix(0.5), earthNode.localMatrix);
-    moonNode.localMatrix = utils.multiplyMatrices(utils.MakeRotateYMatrix(-0.1), moonNode.localMatrix);
-    */
-
     // Update all world matrices in the scene graph
-    cabinetSpace.updateWorldMatrix();
+    sceneRoot.updateWorldMatrix();
 
     // Compute all the matrices for rendering
     objects.forEach(function (object) {
@@ -230,7 +269,7 @@ async function init() {
   //load the meshes from file
   const src_objects = ['cabinet.obj', 'hammer.obj', 'mole.obj'];
   meshes = [];
-  for(const src of src_objects){
+  for (const src of src_objects) {
     var objStr = await utils.get_objstr(assetDir + src);
     meshes.push(new OBJ.Mesh(objStr));
   }
