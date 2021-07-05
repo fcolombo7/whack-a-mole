@@ -28,7 +28,6 @@ var lightColorHandle;
 var normalMatrixPositionHandle;
 var textLocation;
 
-
 //ATTRIBUTES
 var uvAttributeLocation;
 var positionAttributeLocation;
@@ -42,9 +41,6 @@ var cameraGamePosition = [0.0, 7.0, 4.0];
 var cameraPosition = [0.0, 10.0, 20.0];
 var target = [0.0, 0.8*scaleFactor, 0.0]; //the target is not the origin but the point of the cabinet where the moles jump. 
 var up = [0.0, 1.0, 0.0];
-//var angle = 0.01;
-//var elevation = -45.0;
-//var lookRadius = 10.0;
 
 /**directional light */
 var directionalLight;
@@ -378,10 +374,6 @@ function setMatrices(){
   //viewMatrix = utils.MakeView(cameraPosition[0], cameraPosition[1], cameraPosition[2], 0.0, 0.0);
 }
 
-function animate() {
-  //Here the transformation of each matrix
-}
-
 function drawSkybox(){
   gl.useProgram(skyboxProgram);
   
@@ -399,13 +391,10 @@ function drawSkybox(){
 }
 
 function drawScene() {
+  animate();
+
   gl.clearColor(0.85, 0.85, 0.85, 1.0); //TODO: what is it used for?
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-  
-  /*let cz = lookRadius * Math.cos(utils.degToRad(-angle)) * Math.cos(utils.degToRad(-elevation));
-	let cx = lookRadius * Math.sin(utils.degToRad(-angle)) * Math.cos(utils.degToRad(-elevation));
-	let cy = lookRadius * Math.sin(utils.degToRad(-elevation));
-	viewMatrix = utils.MakeView(cx, cy, cz, elevation, angle);*/
 
   var cameraMatrix = utils.LookAt(cameraPosition, target, up);
   viewMatrix = utils.invertMatrix(cameraMatrix);
@@ -442,6 +431,11 @@ function drawScene() {
 
   requestAnimationFrame(drawScene);
 }
+
+function animate() {
+  //Here the transformation of each matrix
+  animateCamera();
+}  
 
 function main() {
   lightDefinition();
@@ -511,17 +505,20 @@ var mouseState = false;
 var lastMouseX = -100, lastMouseY = -100;
 
 function doMouseDown(event) {
+  if (document.getElementById("start_game").disabled) return;
 	lastMouseX = event.pageX;
 	lastMouseY = event.pageY;
 	mouseState = true;
 }
 function doMouseUp(event) {
+  if (document.getElementById("start_game").disabled) return;
 	lastMouseX = -100;
 	lastMouseY = -100;
 	mouseState = false;
 }
 
 function doMouseZoom(event){
+  if (document.getElementById("start_game").disabled) return;
   const delta = Math.sign(event.deltaY);
   console.log("wheel: " + delta);
   cameraPosition[2] = cameraPosition[2] + delta;
@@ -529,6 +526,7 @@ function doMouseZoom(event){
 }
 
 function doMouseMove(event) {
+  if (document.getElementById("start_game").disabled) return;
 	if(mouseState) {
 		var dx = event.pageX - lastMouseX;
 		var dy = lastMouseY - event.pageY;
@@ -538,16 +536,66 @@ function doMouseMove(event) {
 		if((dx != 0) || (dy != 0)) {
       cameraPosition[0] = cameraPosition[0] - 0.2 * dx;
       cameraPosition[1] = cameraPosition[1] - 0.2 * dy;
-			//angle = angle + 0.5 * dx;
-			//elevation = elevation + 0.5 * dy;
 		}
 	}
-  //console.log("ELEVATION: "+elevation);
-  //console.log("ANGLE: "+angle+'\n');
   console.log("CAMERA POSITION: "+cameraPosition);
 
 }
 
 function onStartGameClick(){
-  cameraPosition = [cameraGamePosition[0], cameraGamePosition[1], cameraGamePosition[2]];
+  lastUpdateTime = (new Date).getTime();
+  movingCamera = true;
+  document.getElementById("start_game").disabled = true; 
+  //cameraPosition = [cameraGamePosition[0], cameraGamePosition[1], cameraGamePosition[2]];
+}
+
+/**
+ *  ANIMATIONS
+ */
+
+/**ANIMATION CONTROL VARIABLES */
+var lastUpdateTime;
+var movingCamera = false;
+
+function animateCamera(){
+    if(movingCamera){
+      var currentTime = (new Date).getTime();
+      var end = true;
+      if(lastUpdateTime){
+        var delta = (10 * (currentTime - lastUpdateTime)) / 1000.0;
+        //update the x coordinate
+        if(Math.abs(cameraGamePosition[0] - cameraPosition[0]) < delta){
+          cameraPosition[0] = cameraGamePosition[0];
+        }
+        else{
+          end = false;
+          let cx = Math.sign(cameraGamePosition[0] - cameraPosition[0]) * delta;
+          cameraPosition[0] += cx;
+        }
+        //update the y coordinate
+        if(Math.abs(cameraGamePosition[1] - cameraPosition[1]) < delta){
+          cameraPosition[1] = cameraGamePosition[1];
+        }
+        else{
+          end = false;
+          let cy = Math.sign(cameraGamePosition[1] - cameraPosition[1]) * delta;
+          cameraPosition[1] += cy;
+        }
+        //update the z coordinate
+        if(Math.abs(cameraGamePosition[2] - cameraPosition[2]) < delta){
+          cameraPosition[2] = cameraGamePosition[2];
+        }
+        else{
+          end = false;
+          let cz = Math.sign(cameraGamePosition[2] - cameraPosition[2]) * delta;
+          cameraPosition[2] += cz;
+        }     
+      }
+      if(!end)
+        lastUpdateTime = currentTime;
+      else{
+        movingCamera = false;
+        document.getElementById("start_game").disabled = false; //TODO: Here only to repeat the test, otherwise the game would start.
+      }
+    }
 }
