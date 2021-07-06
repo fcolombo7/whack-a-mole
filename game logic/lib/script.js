@@ -149,6 +149,9 @@ window.addEventListener("keydown", function (event) {
             x = x + 0.31763 * 2;
           }
           break;
+        case "Space":
+          animateHammer(Element);
+          break;
       }
       Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeTranslateMatrix(x, 0, z));
       Element.updateWorldMatrix();
@@ -594,9 +597,9 @@ function doMouseUp(event) {
 function doMouseZoom(event) {
   if (document.getElementById("start_game").disabled) return;
   const delta = Math.sign(event.deltaY);
-  console.log("wheel: " + delta);
+  // console.log("wheel: " + delta);
   cameraPosition[2] = cameraPosition[2] + delta;
-  console.log("CAMERA POSITION: " + cameraPosition);
+  //console.log("CAMERA POSITION: " + cameraPosition);
 }
 
 function doMouseMove(event) {
@@ -612,7 +615,7 @@ function doMouseMove(event) {
       cameraPosition[1] = cameraPosition[1] - 0.2 * dy;
     }
   }
-  console.log("CAMERA POSITION: " + cameraPosition);
+  //console.log("CAMERA POSITION: " + cameraPosition);
 
 }
 
@@ -702,4 +705,29 @@ function animateMoles() {
     }
     lastMoleStatus = curMoleStatus;
   }
+}
+
+var Ry = 0.0;
+var lastHammertatus = true;
+
+function animateHammer(Element){
+  var currentTime = (new Date).getTime();
+  if (lastUpdateTime) {
+    var deltaC = (30 * (currentTime - lastUpdateTime)) / 1000.0;
+    Ry += deltaC;
+  }
+
+  //NEED TO MAKE IT MOVE UP AND DOWN
+  // TODO: create the correct animation
+  if(lastHammertatus){
+    // Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeRotateXMatrix(Ry));
+    Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeRotateXMatrix(-90));
+    lastHammertatus = false;
+  } else {
+    Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeRotateXMatrix(90));
+    lastHammertatus = true;
+  }
+  console.log(Element.localMatrix);
+  Element.updateWorldMatrix();
+  lastUpdateTime = currentTime;
 }
