@@ -59,6 +59,7 @@ var sceneRoot;
 
 //Definition of the structure used as scene graph (example taken from webGLTutorial2)
 var Node = function () {
+  this.name = "";
   this.children = [];
   this.localMatrix = utils.identityMatrix();
   this.worldMatrix = utils.identityMatrix();
@@ -102,6 +103,61 @@ var deltaYMole = 0.6; //up&down difference
 
 
 /** FUNCTIONS */
+
+window.addEventListener("keydown", function (event) {
+  if (event.defaultPrevented) {
+    return; // Do nothing if event already handled
+  }
+  var x = 0, z = 0;
+
+  sceneRoot.children.forEach(Element => {
+    if (Element.name == "hammer") {
+      switch (event.code) {
+        case "KeyS":
+          if (Element.localMatrix[11] < 1.5 && Element.localMatrix[3] < -0.3) {
+            x = 0.31763;
+            z = z + 0.4429;
+          }
+          if (Element.localMatrix[11] < 1.5 && Element.localMatrix[3] > 0.3) {
+            x = - 0.31763;
+            z = z + 0.4429;
+          }
+          break;
+        case "KeyW":
+          if (Element.localMatrix[11] > 1.5 && Element.localMatrix[3] < -0.3) {
+            x = - 0.31763;
+            z = z - 0.4429;
+          }
+          if (Element.localMatrix[11] > 1.5 && Element.localMatrix[3] > 0.3) {
+            x = 0.31763;
+            z = z - 0.4429;
+          }
+          break;
+        case "KeyA":
+          if (Element.localMatrix[11] < 1.5 && Element.localMatrix[3] > -0.3) {
+            x = x - 0.6353;
+          }
+          if (Element.localMatrix[11] > 1.5 && Element.localMatrix[3] > -0.3) {
+            x = x - 0.31763 * 2;
+          }
+          break;
+        case "KeyD":
+          if (Element.localMatrix[11] < 1.5 && Element.localMatrix[3] < 0.3) {
+            x = x + 0.6353;
+          }
+          if (Element.localMatrix[11] > 1.5 && Element.localMatrix[3] < 0.3) {
+            x = x + 0.31763 * 2;
+          }
+          break;
+      }
+      Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeTranslateMatrix(x, 0, z));
+      Element.updateWorldMatrix();
+    }
+  });
+  // Consume the event so it doesn't get handled twice
+  event.preventDefault();
+}, true);
+
 
 function setViewportAndCanvas() {
   //SET Global states (viewport size, viewport background color, Depth test)
@@ -279,13 +335,13 @@ function sceneGraphDefinition() {
 
   var cabinetSpace = new Node();
   cabinetSpace.localMatrix = utils.MakeWorld(0, 0, 0, 0, 0, 0, scaleFactor);
-  //cabinetSpace.localMatrix = utils.MakeWorld(0, 0, 0, 90, 0, 0, 2.5);
-
+  cabinetSpace.name = "cabinetSpace";
   var moleSpace = new Node();
   moleSpace.localMatrix = utils.MakeTranslateMatrix(0, 1.1, 0.2);
+  moleSpace.name = "moleSpace";
 
   var cabinetNode = new Node();
-  //cabinetNode.localMatrix = utils.MakeRotateXMatrix(90);
+  cabinetNode.name = "cabinet";
   cabinetNode.drawInfo = {
     materialColor: [0.6, 0.6, 0.0],
     programInfo: program,
@@ -294,6 +350,7 @@ function sceneGraphDefinition() {
   };
 
   var hammerNode = new Node();
+  hammerNode.name = "hammer";
   hammerNode.localMatrix = utils.MakeTranslateMatrix(-0.63523, 1.3, 1.3);
   hammerNode.drawInfo = {
     materialColor: [0.2, 0.5, 0.8],
@@ -303,6 +360,7 @@ function sceneGraphDefinition() {
   };
 
   var mole1Node = new Node();
+  mole1Node.name = "mole1";
   mole1Node.localMatrix = utils.MakeTranslateMatrix(-0.63523, 0, 0);
   mole1Node.drawInfo = {
     materialColor: [0.6, 0.6, 0.6],
@@ -312,6 +370,7 @@ function sceneGraphDefinition() {
   };
 
   var mole2Node = new Node();
+  mole2Node.name = "mole2";
   mole2Node.drawInfo = {
     materialColor: [0.6, 0.6, 0.6],
     programInfo: program,
@@ -320,6 +379,7 @@ function sceneGraphDefinition() {
   };
 
   var mole3Node = new Node();
+  mole3Node.name = "mole3";
   mole3Node.localMatrix = utils.MakeTranslateMatrix(0.6353, 0, 0);
   mole3Node.drawInfo = {
     materialColor: [0.6, 0.6, 0.6],
@@ -329,6 +389,7 @@ function sceneGraphDefinition() {
   };
 
   var mole4Node = new Node();
+  mole4Node.name = "mole4";
   mole4Node.localMatrix = utils.MakeTranslateMatrix(-0.31763, -0.1, 0.4429);
   mole4Node.drawInfo = {
     materialColor: [0.6, 0.6, 0.6],
@@ -338,6 +399,7 @@ function sceneGraphDefinition() {
   };
 
   var mole5Node = new Node();
+  mole5Node.name = "mole5";
   mole5Node.localMatrix = utils.MakeTranslateMatrix(+0.31763, -0.1, 0.4429);
   mole5Node.drawInfo = {
     materialColor: [0.6, 0.6, 0.6],
