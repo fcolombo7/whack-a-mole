@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="text/javascript" src="lib/utils.js"></script>
+  <script type="text/javascript" src="lib/script.js"></script>
+  <title>Whack a Mole</title>
+  <style type="text/css">
+    body {
+      margin: 0;
+      background-color: gray;
+    }
+
+    canvas {
+      display: block;
+      background-color: white;
+      width: 100%;
+      height: 100%;
+    }
+
+    #gui {
+      position: absolute;
+      z-index: 1;
+      left: 30px;
+      top: 30px;
+      width: 300px;
+      border-style: dashed;
+      border-color: blue;
+      overflow: auto
+    }
+
+    .score {
+      background-image: url(asset/gui/scoreboard.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      height: 200px;
+    }
+
+    .score p {
+      font-size: 60pt;
+      text-align: center;
+      font-family: Arial;
+      padding-top: 45pt;
+      margin: 0 0 0 0;
+      font-weight: bold;
+      color: #552306;
+    }
+
+    .start_game {
+      background-image: url(asset/gui/play-button.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      height: 45px;
+    }
+
+    .buttons {
+      margin-top: 10px;
+    }
+
+    .lives {
+      width:80%;
+      margin: 10px auto;
+    }
+
+    .red-cross {
+      background-image: url(asset/gui/red-cross.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      height: 45px;
+      background-position: center;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="c" style="width:100%; height: 100%;"></canvas>
+  <div id="gui">
+    <div class="score">
+      <p>0</p>
+    </div>
+    <div class="buttons">
+      <div class="start_game"></div>
+      <table class="lives">
+        <tr>
+          <td id="l1" class="red-cross"></td>
+          <td id="l2" class="red-cross"></td>
+          <td id="l3"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  </div>
+</body>
+
+</html>
