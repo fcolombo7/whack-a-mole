@@ -4,7 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="text/javascript" src="lib/webgl-obj-loader.min.js"></script>
   <script type="text/javascript" src="lib/utils.js"></script>
+  <script type="text/javascript" src="lib/game.js"></script>
   <script type="text/javascript" src="lib/script.js"></script>
   <title>Whack a Mole</title>
   <style type="text/css">
@@ -62,7 +64,7 @@
     }
 
     .lives {
-      width: 80%;
+      width:80%;
       margin: 10px auto;
     }
 
@@ -77,22 +79,25 @@
 </head>
 
 <body>
-  <canvas id="c" style="width:100%; height: 100%;"></canvas>
+  <canvas id="c"></canvas>
   <div id="gui">
     <div class="score">
-      <p>0</p>
+      <p id='score_text'>0</p>
     </div>
     <div class="buttons">
-      <div class="start_game"></div>
+      <div class="start_game" onclick="onStartButtonClick()"></div>
       <table class="lives">
         <tr>
-          <td id="l1" class="red-cross"></td>
-          <td id="l2" class="red-cross"></td>
+          <td id="l1"></td>
+          <td id="l2"></td>
           <td id="l3"></td>
         </tr>
       </table>
     </div>
   </div>
 </body>
+<script type="text/javascript">
+  window.onload = init();
+</script>
 
 </html>
