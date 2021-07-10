@@ -462,8 +462,49 @@ function drawSkybox() {
   gl.drawArrays(gl.TRIANGLES, 0, 1 * 6);
 }
 
+
+function Anim4(t) {
+  // var s = utils.MakeScaleMatrix(1 / 12);
+  // var tr1 = utils.MakeTranslateMatrix(0.0, 0.5 * 5 / 6, 1);
+  // var tr2 = utils.MakeTranslateMatrix(Math.floor(72 * t) % 12, -Math.floor(12 * t) % 6, 0.0);
+  // var out = utils.multiplyMatrices(utils.multiplyMatrices(
+  //   tr1, s), tr2);
+  return out = utils.MakeTranslateMatrix(Math.floor(72 * t) % 12, -Math.floor(12 * t) % 6, 0.0);
+}
+function Anim1(t) {
+  var tr = utils.MakeTranslateMatrix(t / 4, 0.5, 1);
+  var s = utils.MakeScaleMatrix(1 / 4);
+
+  var out = utils.multiplyMatrices(tr, s);
+  return out;
+}
+
+var g_time = 0;
+
 function drawScene() {
   animate();
+  // animateHammer();
+
+  Element = objects[1];
+  var currentTime = (new Date).getTime();
+  var deltaT;
+  if (lastUpdateTime) {
+    deltaT = (currentTime - lastUpdateTime) / 1000.0;
+  } else {
+    deltaT = 1 / 50;
+  }
+  lastUpdateTime = currentTime;
+  g_time += deltaT;
+
+  t = (g_time - 5 * Math.floor(g_time / 5)) / 5;
+  var tMat = Anim1(t);
+  // tMat = utils.multiplyMatrices(tMat, Element.localMatrix);
+
+  //NEED TO MAKE IT MOVE UP AND DOWN
+  // TODO: create the correct animation
+  // Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeRotateXMatrix(g_time));
+  // Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeRotateXMatrix(-90));
+  // Element.updateWorldMatrix();
 
   gl.clearColor(0.85, 0.85, 0.85, 1.0); //TODO: what is it used for?
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -484,8 +525,13 @@ function drawScene() {
     var projectionMatrix = utils.multiplyMatrices(viewProjectionMatrix, object.worldMatrix);
     var normalMatrix = utils.invertMatrix(utils.transposeMatrix(object.worldMatrix));
 
+    if (object == objects[1]) {
+      gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(tMat));
+      gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
+    }else{
     gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(projectionMatrix));
     gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
+  }
 
     //gl.uniform3fv(materialDiffColorHandle, object.drawInfo.materialColor);
     gl.uniform3fv(lightColorHandle, directionalLightColor);
@@ -592,6 +638,9 @@ function doMouseUp(event) {
   lastMouseX = -100;
   lastMouseY = -100;
   mouseState = false;
+
+  var hammer = objects[1];
+  animateHammer(hammer);
 }
 
 function doMouseZoom(event) {
@@ -710,24 +759,21 @@ function animateMoles() {
 var Ry = 0.0;
 var lastHammertatus = true;
 
-function animateHammer(Element){
+
+function animateHammer(){
+  Element = objects[1];
   var currentTime = (new Date).getTime();
   if (lastUpdateTime) {
     var deltaC = (30 * (currentTime - lastUpdateTime)) / 1000.0;
-    Ry += deltaC;
+  } else {
+    deltaC = 1 / 50;
   }
+  lastUpdateTime = currentTime;
+  g_time += deltaC;
 
   //NEED TO MAKE IT MOVE UP AND DOWN
   // TODO: create the correct animation
-  if(lastHammertatus){
-    // Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeRotateXMatrix(Ry));
-    Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeRotateXMatrix(-90));
-    lastHammertatus = false;
-  } else {
-    Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeRotateXMatrix(90));
-    lastHammertatus = true;
-  }
-  console.log(Element.localMatrix);
+  Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeRotateXMatrix(g_time));
+  // Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeRotateXMatrix(-90));
   Element.updateWorldMatrix();
-  lastUpdateTime = currentTime;
 }
