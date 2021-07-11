@@ -149,9 +149,6 @@ window.addEventListener("keydown", function (event) {
             x = x + 0.31763 * 2;
           }
           break;
-        case "Space":
-          animateHammer(Element);
-          break;
       }
       Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeTranslateMatrix(x, 0, z));
       Element.updateWorldMatrix();
@@ -483,22 +480,6 @@ var g_time = 0;
 
 function drawScene() {
   animate();
-  // animateHammer();
-
-  Element = objects[1];
-  var currentTime = (new Date).getTime();
-  var deltaT;
-  if (lastUpdateTime) {
-    deltaT = (currentTime - lastUpdateTime) / 1000.0;
-  } else {
-    deltaT = 1 / 50;
-  }
-  lastUpdateTime = currentTime;
-  g_time += deltaT;
-
-  t = (g_time - 5 * Math.floor(g_time / 5)) / 5;
-  var tMat = Anim1(t);
-  // tMat = utils.multiplyMatrices(tMat, Element.localMatrix);
 
   //NEED TO MAKE IT MOVE UP AND DOWN
   // TODO: create the correct animation
@@ -522,15 +503,47 @@ function drawScene() {
 
     gl.useProgram(object.drawInfo.programInfo);
 
-    var projectionMatrix = utils.multiplyMatrices(viewProjectionMatrix, object.worldMatrix);
-    var normalMatrix = utils.invertMatrix(utils.transposeMatrix(object.worldMatrix));
-
     if (object == objects[1]) {
-      gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(tMat));
+
+      var currentTime = (new Date).getTime();
+      var deltaT;
+      if (lastUpdateTime) {
+        deltaT = (currentTime - lastUpdateTime) / 1000.0;
+      } else {
+        deltaT = 1 / 50;
+      }
+      lastUpdateTime = currentTime;
+      g_time += deltaT;
+
+      t = (g_time - 5 * Math.floor(g_time / 5)) / 5;
+      t = utils.degToRad(g_time * 10);
+      var tMat = Anim1(t);
+
+      var tri = utils.MakeTranslateMatrix(0, 0, 0);
+      var tr = utils.MakeTranslateMatrix(0, -0.5, 3.5);
+      if (hammering) {
+        var r = utils.MakeRotateXYZMatrix( 0, 360 * t, 0);
+      } else {
+        var r = utils.MakeRotateXYZMatrix(0, -360 * t, 0);
+      }   
+
+      var out = utils.multiplyMatrices(utils.multiplyMatrices(tr, r), tri);
+
+      object.worldMatrix = utils.multiplyMatrices(out, object.worldMatrix);
+
+      var projectionMatrix = utils.multiplyMatrices(viewProjectionMatrix, object.worldMatrix);
+      var normalMatrix = utils.invertMatrix(utils.transposeMatrix(object.worldMatrix));
+
+      gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(projectionMatrix));
       gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
+
     }else{
-    gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(projectionMatrix));
-    gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
+
+      var projectionMatrix = utils.multiplyMatrices(viewProjectionMatrix, object.worldMatrix);
+      var normalMatrix = utils.invertMatrix(utils.transposeMatrix(object.worldMatrix));
+
+      gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(projectionMatrix));
+      gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
   }
 
     //gl.uniform3fv(materialDiffColorHandle, object.drawInfo.materialColor);
@@ -626,21 +639,25 @@ async function init() {
 
 var mouseState = false;
 var lastMouseX = -100, lastMouseY = -100;
+var hammering = false;
 
 function doMouseDown(event) {
   if (document.getElementById("start_game").disabled) return;
   lastMouseX = event.pageX;
   lastMouseY = event.pageY;
   mouseState = true;
+
+  if (hammering) {
+    hammering = false;
+  } else {
+    hammering = true;
+  }
 }
 function doMouseUp(event) {
   if (document.getElementById("start_game").disabled) return;
   lastMouseX = -100;
   lastMouseY = -100;
   mouseState = false;
-
-  var hammer = objects[1];
-  animateHammer(hammer);
 }
 
 function doMouseZoom(event) {
@@ -759,21 +776,5 @@ function animateMoles() {
 var Ry = 0.0;
 var lastHammertatus = true;
 
-
 function animateHammer(){
-  Element = objects[1];
-  var currentTime = (new Date).getTime();
-  if (lastUpdateTime) {
-    var deltaC = (30 * (currentTime - lastUpdateTime)) / 1000.0;
-  } else {
-    deltaC = 1 / 50;
-  }
-  lastUpdateTime = currentTime;
-  g_time += deltaC;
-
-  //NEED TO MAKE IT MOVE UP AND DOWN
-  // TODO: create the correct animation
-  Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeRotateXMatrix(g_time));
-  // Element.localMatrix = utils.multiplyMatrices(Element.localMatrix, utils.MakeRotateXMatrix(-90));
-  Element.updateWorldMatrix();
 }
