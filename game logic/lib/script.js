@@ -40,7 +40,7 @@ var scaleFactor = 2.5;
 /** camera parameters */
 var cameraGamePosition = [0.0, 7.0, 4.0];
 var cameraPosition = [0.0, 10.0, 20.0];
-var target = [0.0, 0.8 * scaleFactor, 0.0]; //the target is not the origin but the point of the cabinet where the moles jump. 
+var target = [0.0, 0.8 * scaleFactor, 0.0]; //the target is not the origin but the point of the cabinet where the moles jump.
 var up = [0.0, 1.0, 0.0];
 
 /**directional light */
@@ -162,7 +162,7 @@ window.addEventListener("keydown", function (event) {
 function setViewportAndCanvas() {
   //SET Global states (viewport size, viewport background color, Depth test)
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  gl.clearColor(0.85, 0.85, 0.85, 1.0); //TODO: background color as variable. 
+  gl.clearColor(0.85, 0.85, 0.85, 1.0); //TODO: background color as variable.
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.enable(gl.DEPTH_TEST);
   //ClearBits();
@@ -331,7 +331,7 @@ function lightDefinition() {
 
 function sceneGraphDefinition() {
   //Here it is defined the scene graph with all the objects of the scene.
-  //the function returns the root of the graph. 
+  //the function returns the root of the graph.
 
   var cabinetSpace = new Node();
   cabinetSpace.localMatrix = utils.MakeWorld(0, 0, 0, 0, 0, 0, scaleFactor);
@@ -459,23 +459,6 @@ function drawSkybox() {
   gl.drawArrays(gl.TRIANGLES, 0, 1 * 6);
 }
 
-
-function Anim4(t) {
-  // var s = utils.MakeScaleMatrix(1 / 12);
-  // var tr1 = utils.MakeTranslateMatrix(0.0, 0.5 * 5 / 6, 1);
-  // var tr2 = utils.MakeTranslateMatrix(Math.floor(72 * t) % 12, -Math.floor(12 * t) % 6, 0.0);
-  // var out = utils.multiplyMatrices(utils.multiplyMatrices(
-  //   tr1, s), tr2);
-  return out = utils.MakeTranslateMatrix(Math.floor(72 * t) % 12, -Math.floor(12 * t) % 6, 0.0);
-}
-function Anim1(t) {
-  var tr = utils.MakeTranslateMatrix(t / 4, 0.5, 1);
-  var s = utils.MakeScaleMatrix(1 / 4);
-
-  var out = utils.multiplyMatrices(tr, s);
-  return out;
-}
-
 var g_time = 0;
 
 function drawScene() {
@@ -504,47 +487,14 @@ function drawScene() {
     gl.useProgram(object.drawInfo.programInfo);
 
     if (object == objects[1]) {
+      animateHammer();
+    }
 
-      var currentTime = (new Date).getTime();
-      var deltaT;
-      if (lastUpdateTime) {
-        deltaT = (currentTime - lastUpdateTime) / 1000.0;
-      } else {
-        deltaT = 1 / 50;
-      }
-      lastUpdateTime = currentTime;
-      g_time += deltaT;
+    var projectionMatrix = utils.multiplyMatrices(viewProjectionMatrix, object.worldMatrix);
+    var normalMatrix = utils.invertMatrix(utils.transposeMatrix(object.worldMatrix));
 
-      t = (g_time - 5 * Math.floor(g_time / 5)) / 5;
-      t = utils.degToRad(g_time * 10);
-      var tMat = Anim1(t);
-
-      var tri = utils.MakeTranslateMatrix(0, 0, 0);
-      var tr = utils.MakeTranslateMatrix(0, -0.5, 3.5);
-      if (hammering) {
-        var r = utils.MakeRotateXYZMatrix( 0, 360 * t, 0);
-      } else {
-        var r = utils.MakeRotateXYZMatrix(0, -360 * t, 0);
-      }   
-
-      var out = utils.multiplyMatrices(utils.multiplyMatrices(tr, r), tri);
-
-      object.worldMatrix = utils.multiplyMatrices(out, object.worldMatrix);
-
-      var projectionMatrix = utils.multiplyMatrices(viewProjectionMatrix, object.worldMatrix);
-      var normalMatrix = utils.invertMatrix(utils.transposeMatrix(object.worldMatrix));
-
-      gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(projectionMatrix));
-      gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
-
-    }else{
-
-      var projectionMatrix = utils.multiplyMatrices(viewProjectionMatrix, object.worldMatrix);
-      var normalMatrix = utils.invertMatrix(utils.transposeMatrix(object.worldMatrix));
-
-      gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(projectionMatrix));
-      gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
-  }
+    gl.uniformMatrix4fv(matrixLocation, gl.FALSE, utils.transposeMatrix(projectionMatrix));
+    gl.uniformMatrix4fv(normalMatrixPositionHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
 
     //gl.uniform3fv(materialDiffColorHandle, object.drawInfo.materialColor);
     gl.uniform3fv(lightColorHandle, directionalLightColor);
@@ -631,7 +581,7 @@ async function init() {
   canvas.addEventListener("wheel", doMouseZoom, false);
 
   /**
-   * GAME INITIALIZATOIN 
+   * GAME INITIALIZATOIN
    * */
   game = new Game();
   main();
@@ -642,16 +592,22 @@ var lastMouseX = -100, lastMouseY = -100;
 var hammering = false;
 
 function doMouseDown(event) {
+  if (event.defaultPrevented) {
+    return; // Do nothing if event already handled
+  }
+
   if (document.getElementById("start_game").disabled) return;
   lastMouseX = event.pageX;
   lastMouseY = event.pageY;
   mouseState = true;
-
-  if (hammering) {
-    hammering = false;
-  } else {
+  
+  if (!hammering) {
     hammering = true;
+    console.log(t);
+    setTimeout(function () { hammering = false }, 450);
   }
+  // Consume the event so it doesn't get handled twice
+  event.preventDefault();
 }
 function doMouseUp(event) {
   if (document.getElementById("start_game").disabled) return;
@@ -659,7 +615,6 @@ function doMouseUp(event) {
   lastMouseY = -100;
   mouseState = false;
 }
-
 function doMouseZoom(event) {
   if (document.getElementById("start_game").disabled) return;
   const delta = Math.sign(event.deltaY);
@@ -667,7 +622,6 @@ function doMouseZoom(event) {
   cameraPosition[2] = cameraPosition[2] + delta;
   //console.log("CAMERA POSITION: " + cameraPosition);
 }
-
 function doMouseMove(event) {
   if (document.getElementById("start_game").disabled) return;
   if (mouseState) {
@@ -775,6 +729,37 @@ function animateMoles() {
 
 var Ry = 0.0;
 var lastHammertatus = true;
+var t;
+
 
 function animateHammer(){
+  object = objects[1];
+  var currentTime = (new Date).getTime();
+  var deltaT;
+  if (lastUpdateTime) {
+    deltaT = (currentTime - lastUpdateTime) / 1000.0;
+  } else {
+    deltaT = 1 / 50;
+  }
+  lastUpdateTime = currentTime;
+  g_time += deltaT;
+
+  // Time needed for the animation
+  var i = 0.5; // this grants a maximum of t = 2.5
+  t = 5*(g_time - i * Math.floor(g_time / i)) / 1;
+
+  var tri = utils.MakeTranslateMatrix(0, 0, 0);
+  var tr = utils.MakeTranslateMatrix(0, -0.5, 3.5);
+  var r = utils.identityMatrix();
+  var out = r;
+  object.worldMatrix = utils.multiplyMatrices(out, object.worldMatrix);
+
+  if (hammering && t < 2.5) {
+    // animation degrees = 75 
+
+    // PROBLEM: while t is close to 1.5 the animation starts from the mole's position instead of the normal starting point
+    var r = utils.MakeRotateXYZMatrix(0, - 75 * Math.abs(Math.sin(t)) , 0); 
+    var out = utils.multiplyMatrices(utils.multiplyMatrices(tr, r), tri);
+    object.worldMatrix = utils.multiplyMatrices(out, object.worldMatrix);
+  }   
 }
