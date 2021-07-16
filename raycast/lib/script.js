@@ -312,9 +312,9 @@ function sceneGraphDefinition() {
   };
   var hole1Pos = [0.0, 0.0, 0.0, 1.0];
   hole1Pos = utils.multiplyMatrixVector(
-        utils.multiplyMatrices(mole1Node.localMatrix, 
-        utils.multiplyMatrices(moleSpace.localMatrix, cabinetSpace.localMatrix)), 
-      hole1Pos);
+    utils.multiplyMatrices(mole1Node.localMatrix,
+      utils.multiplyMatrices(moleSpace.localMatrix, cabinetSpace.localMatrix)),
+    hole1Pos);
 
   var mole2Node = new Node();
   mole2Node.drawInfo = {
@@ -325,9 +325,9 @@ function sceneGraphDefinition() {
   };
   var hole2Pos = [0.0, 0.0, 0.0, 1.0];
   hole2Pos = utils.multiplyMatrixVector(
-        utils.multiplyMatrices(mole2Node.localMatrix, 
-        utils.multiplyMatrices(moleSpace.localMatrix, cabinetSpace.localMatrix)), 
-      hole2Pos);
+    utils.multiplyMatrices(mole2Node.localMatrix,
+      utils.multiplyMatrices(moleSpace.localMatrix, cabinetSpace.localMatrix)),
+    hole2Pos);
 
   var mole3Node = new Node();
   mole3Node.localMatrix = utils.MakeTranslateMatrix(0.6353, 0, 0);
@@ -339,9 +339,9 @@ function sceneGraphDefinition() {
   };
   var hole3Pos = [0.0, 0.0, 0.0, 1.0];
   hole3Pos = utils.multiplyMatrixVector(
-        utils.multiplyMatrices(mole3Node.localMatrix, 
-        utils.multiplyMatrices(moleSpace.localMatrix, cabinetSpace.localMatrix)), 
-      hole3Pos);
+    utils.multiplyMatrices(mole3Node.localMatrix,
+      utils.multiplyMatrices(moleSpace.localMatrix, cabinetSpace.localMatrix)),
+    hole3Pos);
 
   var mole4Node = new Node();
   mole4Node.localMatrix = utils.MakeTranslateMatrix(-0.31763, -0.1, 0.4429);
@@ -353,9 +353,9 @@ function sceneGraphDefinition() {
   };
   var hole4Pos = [0.0, 0.0, 0.0, 1.0];
   hole4Pos = utils.multiplyMatrixVector(
-        utils.multiplyMatrices(mole4Node.localMatrix, 
-        utils.multiplyMatrices(moleSpace.localMatrix, cabinetSpace.localMatrix)), 
-      hole4Pos);
+    utils.multiplyMatrices(mole4Node.localMatrix,
+      utils.multiplyMatrices(moleSpace.localMatrix, cabinetSpace.localMatrix)),
+    hole4Pos);
 
   var mole5Node = new Node();
   mole5Node.localMatrix = utils.MakeTranslateMatrix(+0.31763, -0.1, 0.4429);
@@ -367,9 +367,9 @@ function sceneGraphDefinition() {
   };
   var hole5Pos = [0.0, 0.0, 0.0, 1.0];
   hole5Pos = utils.multiplyMatrixVector(
-        utils.multiplyMatrices(mole5Node.localMatrix, 
-        utils.multiplyMatrices(moleSpace.localMatrix, cabinetSpace.localMatrix)), 
-      hole5Pos);
+    utils.multiplyMatrices(mole5Node.localMatrix,
+      utils.multiplyMatrices(moleSpace.localMatrix, cabinetSpace.localMatrix)),
+    hole5Pos);
 
   //-0.31763, -0.1372, -0,5502
   cabinetNode.setParent(cabinetSpace);
@@ -392,7 +392,7 @@ function sceneGraphDefinition() {
   ];
 
   let y_trasl = 0.2
-  holesWorldPositions=[
+  holesWorldPositions = [
     [hole1Pos[0], hole1Pos[1] - y_trasl, hole1Pos[2]],//1
     [hole2Pos[0], hole2Pos[1] - y_trasl, hole2Pos[2]],//2
     [hole3Pos[0], hole3Pos[1] - y_trasl, hole3Pos[2]],//3
@@ -476,6 +476,7 @@ function animate() {
   //Here the transformation of each matrix
   animateCamera();
   animateMoles();
+  animateHammer();
 }
 
 function main() {
@@ -579,26 +580,26 @@ function doMouseMove(event) {
   //w = 1 is for the homogeneous coordinates in clip space
   var pointEyeCoords = utils.multiplyMatrixVector(projInv, [normX, normY, -1, 1]);
   var pointWorldCoords = utils.multiplyMatrixVector(viewInv, pointEyeCoords);
-  
+
   //console.log("Point eye coords " + pointEyeCoords);
   //console.log("Point world coords " + pointWorldCoords);
   //console.log('Reference: ' + hammerStartingPosition);
-  
-  var mat=utils.identityMatrix();
+
+  var mat = utils.identityMatrix();
   var hammer = objects[1];
-  if(lastX){
+  if (lastX) {
     mat = utils.MakeWorld(pointWorldCoords[0], hammerStartingPosition[1], hammerStartingPosition[2], 0, 0, 0, 0.6);
-  }else{
+  } else {
     let dx = (pointWorldCoords[0] - lastX);
-    if(dx!=0)
+    if (dx != 0)
       mat = utils.multiplyMatrices(utils.MakeTranslateMatrix(dx, 0.0, 0.0), hammer.localMatrix);
   }
-  lastX = pointWorldCoords[0];  
+  lastX = pointWorldCoords[0];
   hammer.localMatrix = mat;
   //console.log("MOUSE POSITION: " + event.pageX + ", " + event.pageY);
 }
 
-function onMouseUp(event){
+function onMouseUp(event) {
   if (!game.isPlaying()) return;
   /** 
    * GET THE COORDINATES OF THE CLICK
@@ -607,9 +608,9 @@ function onMouseUp(event){
   var top = 0.0, left = 0.0;
   canvas = gl.canvas;
   while (canvas && canvas.tagName !== 'BODY') {
-      top += canvas.offsetTop;
-      left += canvas.offsetLeft;
-      canvas = canvas.offsetParent;
+    top += canvas.offsetTop;
+    left += canvas.offsetLeft;
+    canvas = canvas.offsetParent;
   }
   var x = event.clientX - left;
   var y = event.clientY - top;
@@ -617,21 +618,21 @@ function onMouseUp(event){
   /**
    * NORMALIZE THE COORDINATES
    */
-  var normX = (2*x)/ gl.canvas.width - 1;
-  var normY = 1 - (2*y) / gl.canvas.height;
-  
+  var normX = (2 * x) / gl.canvas.width - 1;
+  var normY = 1 - (2 * y) / gl.canvas.height;
+
   var projInv = utils.invertMatrix(projectionMatrix);
   var viewInv = utils.invertMatrix(viewMatrix);
-  
+
   /**
    * POINT ON THE NEAR PLANE
    */
   var pointEyeCoords = utils.multiplyMatrixVector(projInv, [normX, normY, -1, 1]);
 
- /**
-   * DIRECTION IN EYE SPACE
-   * w = 0 is because this is not a point anymore but is considered as a direction
-   */
+  /**
+    * DIRECTION IN EYE SPACE
+    * w = 0 is because this is not a point anymore but is considered as a direction
+    */
   var rayEyeCoords = [pointEyeCoords[0], pointEyeCoords[1], pointEyeCoords[2], 0];
 
   /**
@@ -643,9 +644,9 @@ function onMouseUp(event){
   //console.log("normalised ray dir "+normalisedRayDir);
   //The ray starts from the camera in world coordinates
   var rayStartPoint = [cameraGamePosition[0], cameraGamePosition[1], cameraGamePosition[2]];
-  
+
   var curMolesStatus = game.getAllStatus();
-  for(let i = 0; i<holesWorldPositions.length; i++){
+  for (let i = 0; i < holesWorldPositions.length; i++) {
     /**
      * MODEL EACH HOLE OF THE CABINET AS A SPHERE.
      * CHECK THE INTERSACTION WITH THE RAY
@@ -653,12 +654,21 @@ function onMouseUp(event){
     //console.log(holesWorldPositions[i]);
     let sphereRadius = 0.4;
     let sphereCentre = [holesWorldPositions[i][0] * scaleFactor, holesWorldPositions[i][1] * scaleFactor, holesWorldPositions[i][2] * scaleFactor]
-    
+
     hit = raySphereIntersection(rayStartPoint, normalisedRayDir, sphereCentre, sphereRadius);
-    if(hit){
-      console.log("CABINET HOLE#"+i+" SELECTED");
+    if (hit) {
+      console.log("CABINET HOLE#" + i + " SELECTED");
+      /**
+       *  HAMMER ANIMATION HERE  
+      */
+      lastHammerStatus = true;
+      let dx = holesWorldPositions[i][0] - lastX;
+      let hammer = objects[1];
+      mat = utils.multiplyMatrices(utils.MakeTranslateMatrix(dx, 0.0, 0.0), hammer.localMatrix);
+      hammer.localMatrix = mat;
+
       //whack the mole and get from the game the score and the lives
-      let {score, lives} = game.whackMole(i);
+      let { score, lives } = game.whackMole(i);
       updateGUI(score, lives);
       if (!game.isPlaying()) //then the game is ended.
         onGameEnd();
@@ -667,10 +677,9 @@ function onMouseUp(event){
 }
 
 function onStartButtonClick() {
-  lastUpdateTime = (new Date).getTime();
+  lastCameraUpdateTime = (new Date).getTime();
   movingCamera = true;
   document.getElementById("start_game").disabled = true;
-  //cameraPosition = [cameraGamePosition[0], cameraGamePosition[1], cameraGamePosition[2]];
 }
 
 
@@ -679,15 +688,16 @@ function onStartButtonClick() {
  */
 
 /**ANIMATION CONTROL VARIABLES */
-var lastUpdateTime;
+//CAMERA
+var lastCameraUpdateTime;
 var movingCamera = false;
 
 function animateCamera() {
   if (movingCamera) {
     var currentTime = (new Date).getTime();
     var endAnimation = true;
-    if (lastUpdateTime) {
-      var delta = (10 * (currentTime - lastUpdateTime)) / 1000.0;
+    if (lastCameraUpdateTime) {
+      var delta = (10 * (currentTime - lastCameraUpdateTime)) / 1000.0;
       //update the x coordinate
       if (Math.abs(cameraGamePosition[0] - cameraPosition[0]) < delta) {
         cameraPosition[0] = cameraGamePosition[0];
@@ -717,7 +727,7 @@ function animateCamera() {
       }
     }
     if (!endAnimation)
-      lastUpdateTime = currentTime;
+      lastCameraUpdateTime = currentTime;
     else {
       movingCamera = false;
       game.start();
@@ -725,6 +735,7 @@ function animateCamera() {
   }
 }
 
+//MOLES
 var lastMoleStatus;
 
 function animateMoles() {
@@ -742,59 +753,149 @@ function animateMoles() {
     var curMoleStatus = game.getAllStatus();
     for (let i = 0; i < curMoleStatus.length; i++) {
       if (curMoleStatus[i] != lastMoleStatus[i]) {
+
+        /*
         let c;
         if (curMoleStatus[i] > 0) c = 1.0;
         else c = -1.0;
         curLocalPosition = objects[i + 2].localMatrix;
         objects[i + 2].localMatrix = utils.multiplyMatrices(curLocalPosition, utils.MakeTranslateMatrix(0.0, 0.0 + deltaYMole * c, 0.0));
+        */
+        lastMoleStatus[i] = curMoleStatus[i];
+        molesAnimationStatus[i] = true;
       }
+      singleMoleAnimation(i);
     }
-    lastMoleStatus = curMoleStatus;
+    //lastMoleStatus = curMoleStatus;
   }
 }
 
+var moleAnimDuration = 100; //ms
+var molesAnimTime = [0, 0, 0, 0, 0]
+var lastMolesUpdateTime = [null, null, null, null, null];
+var molesAnimationStatus = [false, false, false, false, false]; //not the status of the mole, but true if the mole is performing an animation
+
+function singleMoleAnimation(idx) {
+  if (!molesAnimationStatus[idx]) return;
+  let mole = objects[idx + 2];
+  var currentTime = (new Date).getTime();
+  var deltaT;
+  if (lastMolesUpdateTime[idx]) {
+    deltaT = (currentTime - lastMolesUpdateTime[idx]);
+  } else {
+    deltaT = 1 / 50;
+  }
+  lastMolesUpdateTime[idx] = currentTime;
+  molesAnimTime[idx] += deltaT;
+  let c;
+  if(lastMoleStatus[idx]>0) c = 1.0;
+  else c = -1.0
+
+  dy = deltaT/moleAnimDuration * deltaYMole;
+  mole.localMatrix = utils.multiplyMatrices(mole.localMatrix, utils.MakeTranslateMatrix(0.0, 0.0 + dy * c, 0.0));
+  
+  if (molesAnimTime[idx] >= moleAnimDuration) {
+    lastMolesUpdateTime[idx] = null
+    molesAnimTime[idx] = 0;
+    molesAnimationStatus[idx] = false;
+  }
+  console.log(molesAnimTime);
+  console.log(lastMolesUpdateTime);
+  console.log(molesAnimationStatus);
+  console.log(lastMoleStatus);
+}
+
+// HAMMER
+var hammerAnimTime = 0;
+var hammerAnimDuration = 150; //ms
+var positionBeforeAnim = null
+var lastHammerStatus = false
+var lastHammerUpdateTime = null;
+
+function animateHammer() {
+  if (!lastHammerStatus) return;
+
+  let hammer = objects[1];
+  if (!positionBeforeAnim)
+    positionBeforeAnim = hammer.localMatrix
+
+  var currentTime = (new Date).getTime();
+  var deltaT;
+  if (lastHammerUpdateTime) {
+    deltaT = (currentTime - lastHammerUpdateTime);
+  } else {
+    deltaT = 1 / 50;
+  }
+  lastHammerUpdateTime = currentTime;
+
+  /** START POSITION */
+  let r_s = Math.sin(hammerAnimTime / hammerAnimDuration * Math.PI) * (-60);
+  /** END POSITION */
+  let r_e = Math.sin((hammerAnimTime + deltaT) / hammerAnimDuration * Math.PI) * (-60);
+  let delta_rot = r_e - r_s;
+  console.log(r_s, r_e, delta_rot);
+  /** UPDATE THE CUMULATIVE ANIMATION TIME */
+  hammerAnimTime += deltaT;
+
+  //the center of the rotation is the handle of the hammer
+  var tr_mat = utils.MakeTranslateMatrix(0, -1.50, 0);
+  var rot_mat = utils.MakeRotateXYZMatrix(0, delta_rot, 0);
+  var tr_mat_inv = utils.MakeTranslateMatrix(0, 1.50, 0);
+
+  var mat = utils.multiplyMatrices(utils.multiplyMatrices(tr_mat, rot_mat), tr_mat_inv)
+
+  hammer.localMatrix = utils.multiplyMatrices(hammer.localMatrix, mat);
+
+  if (hammerAnimTime >= hammerAnimDuration) {
+    lastHammerUpdateTime = null
+    hammerAnimTime = 0;
+    lastHammerStatus = false;
+    hammer.localMatrix = positionBeforeAnim;
+    positionBeforeAnim = null;
+  }
+}
 
 /**
  * OTHER FUNCTIONS
  */
- function normaliseVector(vec){
+function normaliseVector(vec) {
   var magnitude = Math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
-  var normVec = [vec[0]/magnitude, vec[1]/magnitude, vec[2]/magnitude];
+  var normVec = [vec[0] / magnitude, vec[1] / magnitude, vec[2] / magnitude];
   return normVec;
 }
 
-function raySphereIntersection(rayStartPoint, rayNormalisedDir, sphereCentre, sphereRadius){
+function raySphereIntersection(rayStartPoint, rayNormalisedDir, sphereCentre, sphereRadius) {
   //This algorithm is taken from the book Real Time Rendering fourth edition
-  
+
   //Distance between sphere origin and origin of ray
   var l = [sphereCentre[0] - rayStartPoint[0], sphereCentre[1] - rayStartPoint[1], sphereCentre[2] - rayStartPoint[2]];
   var l_squared = l[0] * l[0] + l[1] * l[1] + l[2] * l[2];
   //If this is true, the ray origin is inside the sphere so it collides with the sphere
-  if(l_squared < (sphereRadius*sphereRadius)){
-      //console.log("ray origin inside sphere");
-      return true;
+  if (l_squared < (sphereRadius * sphereRadius)) {
+    //console.log("ray origin inside sphere");
+    return true;
   }
   //Projection of l onto the ray direction 
   var s = l[0] * rayNormalisedDir[0] + l[1] * rayNormalisedDir[1] + l[2] * rayNormalisedDir[2];
   //The spere is behind the ray origin so no intersection
-  if(s < 0){
-      //console.log("sphere behind ray origin");
-      return false;
+  if (s < 0) {
+    //console.log("sphere behind ray origin");
+    return false;
   }
   //Squared distance from sphere centre and projection s with Pythagorean theorem
-  var m_squared = l_squared - (s*s);
+  var m_squared = l_squared - (s * s);
   //If this is true the ray will miss the sphere
-  if(m_squared > (sphereRadius*sphereRadius)){
-      //console.log("m squared > r squared");
-      return false;
+  if (m_squared > (sphereRadius * sphereRadius)) {
+    //console.log("m squared > r squared");
+    return false;
   }
   //Now we can say that the ray will hit the sphere 
   //console.log("hit");
   return true;
-  
+
 }
 
-function updateGUI(score, lives){
+function updateGUI(score, lives) {
   var score_text = document.getElementById("score_text");
   var l1 = document.getElementById("l1");
   var l2 = document.getElementById("l2");
@@ -811,6 +912,6 @@ function updateGUI(score, lives){
     l3.classList.add("red-cross");
 }
 
-function onGameEnd(){
-  document.getElementById('end_game').style.display='block';
+function onGameEnd() {
+  document.getElementById('end_game').style.display = 'block';
 }
