@@ -45,6 +45,12 @@ var target = [0.0, 0.8 * scaleFactor, 0.0]; //the target is not the origin but t
 var up = [0.0, 1.0, 0.0];
 
 var hammerStartingPosition = [-1.5, 1.4, 1.3];
+
+var molesStartingPositions = [[-0.63523, 0, 0], 
+                              [0, 0, 0],
+                              [0.6353, 0, 0], 
+                              [-0.31763, -0.1, 0.4429], 
+                              [0.31763, -0.1, 0.4429]]
 /**directional light */
 var directionalLight;
 var directionalLightColor;
@@ -303,7 +309,9 @@ function sceneGraphDefinition() {
   };
 
   var mole1Node = new Node();
-  mole1Node.localMatrix = utils.MakeTranslateMatrix(-0.63523, 0, 0);
+  mole1Node.localMatrix = utils.MakeTranslateMatrix(molesStartingPositions[0][0], 
+                                                    molesStartingPositions[0][1], 
+                                                    molesStartingPositions[0][2]);
   mole1Node.drawInfo = {
     materialColor: [0.6, 0.6, 0.6],
     programInfo: program,
@@ -317,6 +325,9 @@ function sceneGraphDefinition() {
     hole1Pos);
 
   var mole2Node = new Node();
+  mole2Node.localMatrix = utils.MakeTranslateMatrix(molesStartingPositions[1][0], 
+                                                    molesStartingPositions[1][1], 
+                                                    molesStartingPositions[1][2]);
   mole2Node.drawInfo = {
     materialColor: [0.6, 0.6, 0.6],
     programInfo: program,
@@ -330,7 +341,9 @@ function sceneGraphDefinition() {
     hole2Pos);
 
   var mole3Node = new Node();
-  mole3Node.localMatrix = utils.MakeTranslateMatrix(0.6353, 0, 0);
+  mole3Node.localMatrix = utils.MakeTranslateMatrix(molesStartingPositions[2][0], 
+                                                    molesStartingPositions[2][1], 
+                                                    molesStartingPositions[2][2]);
   mole3Node.drawInfo = {
     materialColor: [0.6, 0.6, 0.6],
     programInfo: program,
@@ -344,7 +357,9 @@ function sceneGraphDefinition() {
     hole3Pos);
 
   var mole4Node = new Node();
-  mole4Node.localMatrix = utils.MakeTranslateMatrix(-0.31763, -0.1, 0.4429);
+  mole4Node.localMatrix = utils.MakeTranslateMatrix(molesStartingPositions[3][0], 
+                                                    molesStartingPositions[3][1], 
+                                                    molesStartingPositions[3][2]);
   mole4Node.drawInfo = {
     materialColor: [0.6, 0.6, 0.6],
     programInfo: program,
@@ -358,7 +373,9 @@ function sceneGraphDefinition() {
     hole4Pos);
 
   var mole5Node = new Node();
-  mole5Node.localMatrix = utils.MakeTranslateMatrix(+0.31763, -0.1, 0.4429);
+  mole5Node.localMatrix = utils.MakeTranslateMatrix(molesStartingPositions[4][0], 
+                                                    molesStartingPositions[4][1], 
+                                                    molesStartingPositions[4][2]);
   mole5Node.drawInfo = {
     materialColor: [0.6, 0.6, 0.6],
     programInfo: program,
@@ -798,6 +815,10 @@ function singleMoleAnimation(idx) {
     lastMolesUpdateTime[idx] = null
     molesAnimTime[idx] = 0;
     molesAnimationStatus[idx] = false;
+    let dy = 0;
+    if (lastMoleStatus[idx] == 0)
+      dy = deltaYMole;
+    mole.localMatrix = utils.MakeTranslateMatrix(molesStartingPositions[idx][0], molesStartingPositions[idx][1] - dy , molesStartingPositions[idx][2]);
   }
   console.log(molesAnimTime);
   console.log(lastMolesUpdateTime);
