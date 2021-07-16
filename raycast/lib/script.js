@@ -101,8 +101,6 @@ Node.prototype.updateWorldMatrix = function (matrix) {
 /** GAME */
 var game;
 var deltaYMole = 0.6; //up&down difference
-var gameState = 'end';
-
 
 /** FUNCTIONS */
 
@@ -552,7 +550,7 @@ async function init() {
  */
 var lastX;
 function doMouseMove(event) {
-  if (gameState != 'started') return;
+  if (!game.isPlaying()) return;
 
   //This is a way of calculating the coordinates of the click in the canvas taking into account its possible displacement in the page
   var top = 0.0, left = 0.0;
@@ -601,7 +599,7 @@ function doMouseMove(event) {
 }
 
 function onMouseUp(event){
-  if (gameState!='started') return;
+  if (!game.isPlaying()) return;
   /** 
    * GET THE COORDINATES OF THE CLICK
    * (TAKE INTO ACCOUNT POSSIBLE DISPLACEMENT OF THE PAGE)
@@ -662,6 +660,8 @@ function onMouseUp(event){
       //whack the mole and get from the game the score and the lives
       let {score, lives} = game.whackMole(i);
       updateGUI(score, lives);
+      if (!game.isPlaying()) //then the game is ended.
+        onGameEnd();
     }
   }
 }
@@ -720,10 +720,7 @@ function animateCamera() {
       lastUpdateTime = currentTime;
     else {
       movingCamera = false;
-      game = new Game();
       game.start();
-      gameState = 'started';
-      //document.getElementById("start_game").disabled = false; //TODO: Here only to repeat the test, otherwise the game would start.
     }
   }
 }
@@ -731,7 +728,7 @@ function animateCamera() {
 var lastMoleStatus;
 
 function animateMoles() {
-  if (!game.isStarted) {
+  if (!game.isPlaying()) {
     /** If the fgame is not started put all the mole inside the cabinet */
     if (!lastMoleStatus) {
       for (let i = 2; i < objects.length; i++) {
@@ -812,4 +809,8 @@ function updateGUI(score, lives){
     l2.classList.add("red-cross");
   if (lives == 0)
     l3.classList.add("red-cross");
+}
+
+function onGameEnd(){
+  document.getElementById('end_game').style.display='block';
 }

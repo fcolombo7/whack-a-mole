@@ -73,6 +73,25 @@
       height: 45px;
       background-position: center;
     }
+
+    #end_game {
+      position: absolute;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      top: 0px;
+      background: rgba(60, 60, 60, 0.4);
+    }
+
+    .game_over {
+      background-image: url(asset/gui/end-game.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      height: 120px;
+      margin: 20% auto;
+    }
   </style>
 </head>
 
@@ -92,6 +111,9 @@
         </tr>
       </table>
     </div>
+  </div>
+  <div id="end_game">
+    <div class="game_over"></div>
   </div>
 </body>
 

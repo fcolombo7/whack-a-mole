@@ -116,4 +116,8 @@ class Game{
             return {'score': this.score, 'lives':this.lives}
         }
     }
+
+    isPlaying(){
+        return this.isStarted;
+    }
 }
