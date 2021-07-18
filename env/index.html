@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <script type="text/javascript" src="lib/webgl-obj-loader.min.js"></script>
+  <script type="text/javascript" src="lib/utils.js"></script>
+  <script type="text/javascript" src="lib/game.js"></script>
+  <script type="text/javascript" src="lib/script.js"></script>
+  <title>Whack a Mole</title>
+  <style type="text/css">
+    body {
+      margin: 0;
+      background-color: gray;
+    }
+
+    canvas {
+      display: block;
+      background-color: white;
+      width: 100%;
+      height: 100%;
+    }
+
+    #gui {
+      position: absolute;
+      z-index: 1;
+      left: 30px;
+      top: 30px;
+      width: 300px;
+      overflow: auto
+    }
+
+    .score {
+      background-image: url(asset/gui/scoreboard.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      height: 200px;
+    }
+
+    .score p {
+      font-size: 60pt;
+      text-align: center;
+      font-family: Arial;
+      padding-top: 35pt;
+      margin: 0 0 0 0;
+      font-weight: bold;
+      color: #552306;
+    }
+
+    .start_game {
+      background-image: url(asset/gui/play-button.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      height: 45px;
+    }
+
+    .buttons {
+      margin-top: 10px;
+    }
+
+    .lives {
+      width:80%;
+      margin: 10px auto;
+    }
+
+    .red-cross {
+      background-image: url(asset/gui/red-cross.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      height: 45px;
+      background-position: center;
+    }
+
+    #end_game {
+      position: absolute;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      top: 0px;
+      background: rgba(40, 40, 40, 0.5);
+    }
+
+    .game_over {
+      background-image: url(asset/gui/end-game.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      height: 120px;
+      margin: 20% auto;
+    }
+
+    #env-gui {
+      font-family: Arial;
+      position: absolute;
+      z-index: 1;
+      left: 30px;
+      bottom: 30px;
+      border-style: solid;
+      border-color: rgba(71, 72, 71, 0.64);
+      overflow: auto;
+      padding-left: 15px;
+      padding-bottom: 15px;
+      padding-top: 15px;
+      padding-right: 15px;
+      background-color: rgba(162, 162, 162, 0.77);
+    }
+
+  </style>
+</head>
+
+<body>
+  <canvas id="c"></canvas>
+  <div id="gui">
+    <div class="score">
+      <p id='score_text'>0</p>
+    </div>
+    <div class="buttons">
+      <div id='start_game' class="start_game" onclick="onStartButtonClick()"></div>
+      <table class="lives">
+        <tr>
+          <td id="l1"></td>
+          <td id="l2"></td>
+          <td id="l3"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div id='env-gui'>
+    <p style="font-weight: bolder;">Environment selection</p>
+    <select id="env-menu" name="envs" class="form-select" aria-label="Default select example" onchange="changeEnvironment()">
+      <option value="01" selected>Env name 1</option>
+      <option value="02">Env name 2</option>
+      <option value="03">Env name 3</option>
+      <option value="04">Env name 4</option>
+    </select>
+  </div>
+  <div id="end_game" style='display: none;'>
+    <div class="game_over" onclick="window.location.reload();"></div>
+  </div>
+</body>
+<script type="text/javascript">
+  window.onload = init();
+</script>
+
+</html>
