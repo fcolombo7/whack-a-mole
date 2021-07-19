@@ -28,8 +28,9 @@ var settings = {
     /** lights */
     pointLightPosition: [-2.0, 4.0, 5.0],
     pointLightColor: [0.8, 0.8, 0.8],
-    pointLightTarget: 10,
-    pointLightDecay: 0,
+    //pointLightTarget: 10,
+    //pointLightDecay: 0,
+    fieldOfView: 120,
     ambientLight: [0.4, 0.4, 0.4],
 
     /** background */
@@ -109,8 +110,7 @@ const gui_settings = {
   'lightX': new settingObj(50, false, settings.pointLightPosition[0]),
   'lightY': new settingObj(50, false, settings.pointLightPosition[1]),
   'lightZ': new settingObj(50, false, settings.pointLightPosition[2]),
-  'lightTarget': new settingObj(30, true, settings.pointLightTarget),
-  'lightDecay': new settingObj(5, true, settings.pointLightDecay),
+  'fieldOfView': new settingObj(180, true, settings.fieldOfView),
   'ambientLight': new settingObj(1, true, settings.ambientLight[0]),
 }
 
