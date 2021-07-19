@@ -4,6 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
   <script type="text/javascript" src="lib/utils.js"></script>
   <script type="text/javascript" src="lib/script.js"></script>
   <title>Whack a Mole</title>
@@ -43,7 +45,7 @@
       font-size: 60pt;
       text-align: center;
       font-family: Arial;
-      padding-top: 45pt;
+      padding-top: 35pt;
       margin: 0 0 0 0;
       font-weight: bold;
       color: #552306;
@@ -92,7 +94,53 @@
       height: 120px;
       margin: 20% auto;
     }
+
+    .gui-container {
+      font-family: Arial;
+      position: absolute;
+      z-index: 1;
+      left: 20px;
+      bottom: 30px;
+      border-style: dotted;
+      border-color: rgba(71, 72, 71, 0.64);
+      overflow: auto;
+      padding-bottom: 15px;
+      padding-top: 15px;
+      background-color: rgba(109, 106, 106, 0.4);
+      text-shadow: -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF, 1px 1px 0 #FFF;
+      border-radius: 15px;
+      font-size: small;
+    }
+    .gui-element{
+      display: flex;
+      align-items: center;
+      float: right;
+      height: 1.7em;
+    }
+
+    .gui-slider{
+      min-width: 80px;
+      margin-left: .3em;
+      margin-right: .3em;
+      opacity: 0.7;
+    }
+
+    .gui-slider-text{
+      text-align: right;
+      min-width: 6em;
+    }
+    
+    .gui-slider-value{
+      float: right;
+      min-width: 3.5em;
+      order: 1;
+    }
   </style>
+  <script>
+    function onSliderChange(value, id){
+      document.getElementById(id+"_value").innerHTML = value;
+    }
+  </script>
 </head>
 
 <body>
@@ -112,7 +160,14 @@
       </table>
     </div>
   </div>
-  <div id="end_game">
+  <div class='gui-container'>
+    <div class='gui-element'>
+      <div class="gui-slider-text">cameraX</div>
+      <div id="cameraX_value" class="gui-slider-value">0</div>
+      <input class="gui-slider" type="range" min="-100" max="100" value="0" oninput="onSliderChange(this.value, 'cameraX');">
+    </div>
+  </div>
+  <div id="end_game" style="display: none;">
     <div class="game_over"></div>
   </div>
 </body>
