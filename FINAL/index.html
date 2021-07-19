@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <script type="text/javascript" src="lib/webgl-obj-loader.min.js"></script>
+  <script type="text/javascript" src="lib/utils.js"></script>
+  <script type="text/javascript" src="lib/settings.js"></script>
+  <script type="text/javascript" src="lib/game.js"></script>
+  <script type="text/javascript" src="lib/script.js"></script>
+  <title>Whack a Mole</title>
+  <style type="text/css">
+    body {
+      margin: 0;
+      background-color: gray;
+    }
+
+    canvas {
+      display: block;
+      background-color: white;
+      width: 100%;
+      height: 100%;
+    }
+
+    #gui {
+      position: absolute;
+      z-index: 1;
+      left: 30px;
+      top: 30px;
+      width: 300px;
+      overflow: auto
+    }
+
+    .score {
+      background-image: url(asset/gui/scoreboard.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      height: 200px;
+    }
+
+    .score p {
+      font-size: 60pt;
+      text-align: center;
+      font-family: Arial;
+      padding-top: 35pt;
+      margin: 0 0 0 0;
+      font-weight: bold;
+      color: #552306;
+    }
+
+    .start_game {
+      background-image: url(asset/gui/play-button.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      height: 45px;
+    }
+
+    .buttons {
+      margin-top: 10px;
+    }
+
+    .lives {
+      width:80%;
+      margin: 10px auto;
+    }
+
+    .red-cross {
+      background-image: url(asset/gui/red-cross.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      height: 45px;
+      background-position: center;
+    }
+
+    #end_game {
+      position: absolute;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      top: 0px;
+      background: rgba(40, 40, 40, 0.5);
+    }
+
+    .game_over {
+      background-image: url(asset/gui/end-game.png);
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      height: 120px;
+      margin: 20% auto;
+    }
+
+    .gui-container {
+      font-family: Arial;
+      position: absolute;
+      z-index: 1;
+      left: 20px;
+      bottom: 30px;
+      border-style: dotted;
+      border-color: rgba(71, 72, 71, 0.64);
+      overflow: auto;
+      padding-bottom: 5px;
+      padding-top: 5px;
+      background-color: rgba(181, 174, 174, 0.66);
+      text-shadow: -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF, 1px 1px 0 #FFF;
+      border-radius: 15px;
+      font-size: small;
+      display: grid;
+    }
+    .gui-element{
+      display: flex;
+      align-items: center;
+      float: right;
+      height: 1.7em;
+    }
+
+    .gui-slider{
+      min-width: 80px;
+      margin-left: .3em;
+      margin-right: .3em;
+      opacity: 0.7;
+    }
+
+    .gui-slider-text{
+      text-align: right;
+      min-width: 6em;
+    }
+    
+    .gui-slider-value{
+      float: right;
+      min-width: 3.5em;
+      order: 1;
+    }
+    .gui-subgroup-text{
+      text-align: right;
+      min-width: 6em;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="c"></canvas>
+  <div id="gui">
+    <div class="score">
+      <p id='score_text'>0</p>
+    </div>
+    <div class="buttons">
+      <div id='start_game' class="start_game" onclick="onStartButtonClick()"></div>
+      <table class="lives">
+        <tr>
+          <td id="l1"></td>
+          <td id="l2"></td>
+          <td id="l3"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class='gui-container'>
+    <div class='gui-element'>
+      <div class="gui-subgroup-text">Camera</div>
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">cameraX</div>
+      <div id="cameraX_value" class="gui-slider-value">0</div>
+      <input id="cameraX_slider" class="gui-slider" type="range" min="-100" max="100" value="0" oninput="onSliderChange(this.value, 'cameraX');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">cameraY</div>
+      <div id="cameraY_value" class="gui-slider-value">0</div>
+      <input id="cameraY_slider" class="gui-slider" type="range" min="-100" max="100" value="0" oninput="onSliderChange(this.value, 'cameraY');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">cameraZ</div>
+      <div id="cameraZ_value" class="gui-slider-value">0</div>
+      <input id="cameraZ_slider" class="gui-slider" type="range" min="-100" max="100" value="0" oninput="onSliderChange(this.value, 'cameraZ');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">fieldOfView</div>
+      <div id="fieldOfView_value" class="gui-slider-value">0</div>
+      <input id="fieldOfView_slider" class="gui-slider" type="range" min="0" max="200" value="0" oninput="onSliderChange(this.value, 'fieldOfView');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-subgroup-text">Point light</div>
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">PosX</div>
+      <div id="posX_value" class="gui-slider-value">0</div>
+      <input id="posX_slider" class="gui-slider" type="range" min="-100" max="100" value="0" oninput="onSliderChange(this.value, 'posX');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">PosY</div>
+      <div id="posY_value" class="gui-slider-value">0</div>
+      <input id="posY_slider" class="gui-slider" type="range" min="-100" max="100" value="0" oninput="onSliderChange(this.value, 'posY');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">PosZ</div>
+      <div id="posZ_value" class="gui-slider-value">0</div>
+      <input id="posZ_slider" class="gui-slider" type="range" min="-100" max="100" value="0" oninput="onSliderChange(this.value, 'posZ');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">lightDecay</div>
+      <div id="lightDecay_value" class="gui-slider-value">0</div>
+      <input id="lightDecay_slider" class="gui-slider" type="range" min="0" max="180" value="0" oninput="onSliderChange(this.value, 'lightDecay');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">lightTarget</div>
+      <div id="lightTarget_value" class="gui-slider-value">0</div>
+      <input id="lightTarget_slider" class="gui-slider" type="range" min="0" max="100" value="0" oninput="onSliderChange(this.value, 'lightTarget');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-subgroup-text">Direct light</div>
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">dirTheta</div>
+      <div id="dirTheta_value" class="gui-slider-value">0</div>
+      <input id="dirTheta_slider" class="gui-slider" type="range" min="0" max="180" value="0" oninput="onSliderChange(this.value, 'dirTheta');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">dirPhi</div>
+      <div id="dirPhi_value" class="gui-slider-value">0</div>
+      <input id="dirPhi_slider" class="gui-slider" type="range" min="-180" max="180" value="0" oninput="onSliderChange(this.value, 'dirPhi');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-subgroup-text">Ambient</div>
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">ambientLight</div>
+      <div id="ambientLight_value" class="gui-slider-value">0</div>
+      <input id="ambientLight_slider" class="gui-slider" type="range" min="0" max="100" value="0" oninput="onSliderChange(this.value, 'ambientLight');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-subgroup-text">Specular</div>
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">shiness</div>
+      <div id="shiness_value" class="gui-slider-value">0</div>
+      <input id="shiness_slider" class="gui-slider" type="range" min="0" max="100" value="0" oninput="onSliderChange(this.value, 'shiness');">
+    </div>
+  </div>
+  <div id="end_game" style='display: none;'>
+    <div class="game_over" onclick="window.location.reload();"></div>
+  </div>
+</body>
+<script type="text/javascript">
+  window.onload = init();
+</script>
+
+</html>
