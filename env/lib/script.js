@@ -223,7 +223,7 @@ function loadEnvironment() {
     },
     {
       target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
-      url: envTexDir + 'negx.png',
+      url: envTexDir + 'posx.png',
     },
     {
       target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
@@ -235,11 +235,11 @@ function loadEnvironment() {
     },
     {
       target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-      url: envTexDir + 'posz.png',
+      url: envTexDir + 'posx.png',
     },
     {
       target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,
-      url: envTexDir + 'negz.png',
+      url: envTexDir + 'posx.png',
     },
   ];
   faceInfos.forEach((faceInfo) => {
@@ -248,8 +248,8 @@ function loadEnvironment() {
     // Upload the canvas to the cubemap face.
     const level = 0;
     const internalFormat = gl.RGBA;
-    const width = 1023;
-    const height = 1023;
+    const width = 512;
+    const height = 512;
     const format = gl.RGBA;
     const type = gl.UNSIGNED_BYTE;
 
