@@ -1,8 +1,8 @@
 /** WEBGL */
 var gl;
 
-var program_3d;     //glsl program used to render in the scene, including shadows
-var program_color;  //glsl program used to render in the depth textures, which will be used in the 3d rendering
+var scene_program;  //glsl program used to render in the scene, including shadows
+var depth_program;  //glsl program used to render in the depth textures, which will be used in the 3d rendering
 var skybox_program;
 
 //MODEL
@@ -27,17 +27,22 @@ var depthFramebuffer;
 /** MODEL SHADER */
 var positionAttributeLocation;
 var uvAttributeLocation;
-var normalAttributeLocation ;
-var worldMatrixHandle;
-var viewMatrixHandle;
-var projectionMatrixHandle;
+var normalAttributeLocation;
+var wvpMatrixHandle;
+var positionMatrixHandle;
 var normalMatrixHandle;
-var textureMatrixHandle;
-var ambientLightHandle;
-var textHandle;
-var projectedTextHandle;
-var biasHandle;
-var lightDirectionHandle;
+var shadowMapMatrixHandle ;
+var ambientLightHandle ;
+var colorTextureHandle ;
+var depthTextureHandle;
+var toleranceHandle;
+var shinessHandle;
+var cameraPositionHandle;
+var lightPositionHandle ;
+var lightColorHandle ;
+var lightTargetHandle;
+var lightDecayHandle;
+var useShadowHandle;
 
 /** COLOR SHADER */
 var colorPositionAttributeLocation;
@@ -86,29 +91,33 @@ function setViewportAndCanvas(depth) {
 
 function getAttributesAndUniforms() {
   //model shader
-  positionAttributeLocation = gl.getAttribLocation(program_3d, "a_position");
-  uvAttributeLocation = gl.getAttribLocation(program_3d, "a_texcoord");
-  normalAttributeLocation = gl.getAttribLocation(program_3d, "a_normal");
-  
-  worldMatrixHandle = gl.getUniformLocation(program_3d, 'u_world');
-  viewMatrixHandle = gl.getUniformLocation(program_3d, 'u_view');
-  projectionMatrixHandle = gl.getUniformLocation(program_3d, 'u_projection');
-  normalMatrixHandle = gl.getUniformLocation(program_3d, 'u_nMatrix');
-  textureMatrixHandle = gl.getUniformLocation(program_3d, 'u_textureMatrix');
+  positionAttributeLocation = gl.getAttribLocation(scene_program, "in_position");
+  uvAttributeLocation = gl.getAttribLocation(scene_program, "in_uv");
+  normalAttributeLocation = gl.getAttribLocation(scene_program, "in_normal");
 
-  ambientLightHandle = gl.getUniformLocation(program_3d, 'u_ambientLight');
-  textHandle = gl.getUniformLocation(program_3d, "u_texture");
-  projectedTextHandle = gl.getUniformLocation(program_3d, "u_projectedTexture");
-  biasHandle= gl.getUniformLocation(program_3d, "u_bias");
-  lightDirectionHandle = gl.getUniformLocation(program_3d, "u_lightDirection");
-  
+  wvpMatrixHandle = gl.getUniformLocation(scene_program, 'u_vwpMatrix');
+  positionMatrixHandle = gl.getUniformLocation(scene_program, 'u_pMatrix');
+  normalMatrixHandle = gl.getUniformLocation(scene_program, 'u_nMatrix');
+  shadowMapMatrixHandle = gl.getUniformLocation(scene_program, 'u_shadowMap');
+
+  ambientLightHandle = gl.getUniformLocation(scene_program, 'u_ambientLight');
+  colorTextureHandle = gl.getUniformLocation(scene_program, "u_color_texture");
+  depthTextureHandle = gl.getUniformLocation(scene_program, "u_depth_texture");
+  toleranceHandle = gl.getUniformLocation(scene_program, "u_tolerance");
+  shinessHandle = gl.getUniformLocation(scene_program, "u_shininess");
+  cameraPositionHandle = gl.getUniformLocation(scene_program, "u_cameraPosition");
+  lightPositionHandle = gl.getUniformLocation(scene_program, "u_pointLightPosition");
+  lightColorHandle = gl.getUniformLocation(scene_program, "u_pointLightColor");
+  lightTargetHandle = gl.getUniformLocation(scene_program, "u_pointLightTarget");
+  lightDecayHandle = gl.getUniformLocation(scene_program, "u_pointLightDecay");  
+  useShadowHandle = gl.getUniformLocation(scene_program, "u_useShadow");  
 
   //color shader
-  colorPositionAttributeLocation = gl.getAttribLocation(program_color, "a_position");
-  colorWorldMatrixHandle = gl.getUniformLocation(program_color, 'u_world');
-  colorViewMatrixHandle = gl.getUniformLocation(program_color, 'u_view');
-  colorProjectionMatrixHandle = gl.getUniformLocation(program_color, 'u_projection');
-  colorColorHandle = gl.getUniformLocation(program_color, 'u_color');
+  colorPositionAttributeLocation = gl.getAttribLocation(depth_program, "a_position");
+  colorWorldMatrixHandle = gl.getUniformLocation(depth_program, 'u_world');
+  colorViewMatrixHandle = gl.getUniformLocation(depth_program, 'u_view');
+  colorProjectionMatrixHandle = gl.getUniformLocation(depth_program, 'u_projection');
+  colorColorHandle = gl.getUniformLocation(depth_program, 'u_color');
 
   //sky box
   skyboxTexHandle = gl.getUniformLocation(skyboxProgram, "u_texture");
@@ -117,6 +126,8 @@ function getAttributesAndUniforms() {
 }
 
 function getDepthTextureAndFrame() {
+  depthFramebuffer = gl.createFramebuffer();
+
   depthTexture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, depthTexture);
   gl.texImage2D(
@@ -127,14 +138,14 @@ function getDepthTextureAndFrame() {
     depthTextureSize,   // height
     0,                  // border
     gl.DEPTH_COMPONENT, // format
-    gl.FLOAT,    // type
+    gl.UNSIGNED_INT,    // type //TODO:changed from float
     null);              // data
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR); /**TODO: here I have changed to LINEAR from NEAREST! */
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-  depthFramebuffer = gl.createFramebuffer();
+  
   gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
   gl.framebufferTexture2D(
     gl.FRAMEBUFFER,       // target
@@ -142,6 +153,13 @@ function getDepthTextureAndFrame() {
     gl.TEXTURE_2D,        // texture target
     depthTexture,         // texture
     0);                   // mip level
+  
+  status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+  if (status !== gl.FRAMEBUFFER_COMPLETE) {
+    console.log("The created frame buffer is invalid: " + status.toString());
+  }
+  gl.bindTexture(gl.TEXTURE_2D, null);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
 function loadObj() {
@@ -297,9 +315,8 @@ function sceneGraphDefinition() {
 
   var cabinetNode = new Node();
   cabinetNode.drawInfo = {
-    programInfo: program_3d,
-    depthProgramInfo: program_color,
-    u_color: [0.0, 0.0, 1.0],
+    programInfo: scene_program,
+    depthProgramInfo: depth_program,
     bufferLength: meshes[0].indices.length,
     vertexArray: vao_arr[0],
   };
@@ -313,9 +330,8 @@ function sceneGraphDefinition() {
   );
 
   hammerNode.drawInfo = {
-    programInfo: program_3d,
-    depthProgramInfo: program_color,
-    u_color: [0.0, 0.0, 1.0],
+    programInfo: scene_program,
+    depthProgramInfo: depth_program,
     bufferLength: meshes[1].indices.length,
     vertexArray: vao_arr[1],
   };
@@ -328,8 +344,8 @@ function sceneGraphDefinition() {
   );
 
   mole1Node.drawInfo = {
-    programInfo: program_3d,
-    depthProgramInfo: program_color,
+    programInfo: scene_program,
+    depthProgramInfo: depth_program,
     u_color:[0.0, 0.0, 1.0],
     bufferLength: meshes[2].indices.length,
     vertexArray: vao_arr[2],
@@ -349,9 +365,8 @@ function sceneGraphDefinition() {
   );
 
   mole2Node.drawInfo = {
-    programInfo: program_3d,
-    depthProgramInfo: program_color,
-    u_color: [0.0, 0.0, 1.0],
+    programInfo: scene_program,
+    depthProgramInfo: depth_program,
     bufferLength: meshes[2].indices.length,
     vertexArray: vao_arr[2],
   };
@@ -369,9 +384,8 @@ function sceneGraphDefinition() {
   );
 
   mole3Node.drawInfo = {
-    programInfo: program_3d,
-    depthProgramInfo: program_color,
-    u_color: [0.0, 0.0, 1.0],
+    programInfo: scene_program,
+    depthProgramInfo: depth_program,
     bufferLength: meshes[2].indices.length,
     vertexArray: vao_arr[2],
   };
@@ -388,9 +402,8 @@ function sceneGraphDefinition() {
     settings.molesStartingPositions[3][2]
   );
   mole4Node.drawInfo = {
-    programInfo: program_3d,
-    depthProgramInfo: program_color,
-    u_color: [0.0, 0.0, 1.0],
+    programInfo: scene_program,
+    depthProgramInfo: depth_program,
     bufferLength: meshes[2].indices.length,
     vertexArray: vao_arr[2],
   };
@@ -406,9 +419,8 @@ function sceneGraphDefinition() {
     settings.molesStartingPositions[4][1],
     settings.molesStartingPositions[4][2]);
   mole5Node.drawInfo = {
-    programInfo: program_3d,
-    depthProgramInfo: program_color,
-    u_color: [0.0, 0.0, 1.0],
+    programInfo: scene_program,
+    depthProgramInfo: depth_program,
     bufferLength: meshes[2].indices.length,
     vertexArray: vao_arr[2],
   };
@@ -454,7 +466,7 @@ function setMatrices(){
   projectionMatrix = utils.MakePerspective(60, gl.canvas.width / gl.canvas.height, 1.0, 2000.0); // fow, aspect, near, far
   viewMatrix = utils.invertMatrix(cameraMatrix);
 
-  lightWorldMatrix = utils.LookAt(settings.posLight, settings.target, settings.up);
+  lightWorldMatrix = utils.LookAt(settings.lightPosition, settings.target, settings.up);
   lightProjectionMatrix = utils.MakePerspective(settings.fieldOfView, gl.canvas.width / gl.canvas.height, 0.5, 10.0); //TODO: change it.
 }
 
@@ -484,21 +496,20 @@ function render() {
   gl.enable(gl.DEPTH_TEST);
   
   setMatrices();
-  // Update all world matrices in the scene graph
+  // Update all world matrices in the scene graphsetViewportAndCanvas
   sceneRoot.updateWorldMatrix();
-  
+  if(settings.useShadow){
   // draw to the depth texture
   gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
   setViewportAndCanvas(true);
-  drawScene(lightProjectionMatrix, lightWorldMatrix, lightWorldMatrix, true);
+  drawScene(lightProjectionMatrix, lightWorldMatrix, null, true);
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
   setViewportAndCanvas(false);
-  let textureMatrix = utils.identityMatrix();
-  textureMatrix = utils.multiplyMatrices(textureMatrix, utils.MakeTranslateMatrix(0.5, 0.5, 0.5));
-  textureMatrix = utils.multiplyMatrices(textureMatrix, utils.MakeScaleMatrix(0.5, 0.5, 0.5));
-  textureMatrix = utils.multiplyMatrices(textureMatrix, lightProjectionMatrix);
-  drawScene(projectionMatrix, cameraMatrix, textureMatrix, false);
+
+  let shadowmapTransformMatrix = utils.multiplyMatrices(lightProjectionMatrix, lightWorldMatrix);
+  drawScene(projectionMatrix, cameraMatrix, shadowmapTransformMatrix, false);
   
   
   if (settings.useEnvironment)
@@ -507,11 +518,9 @@ function render() {
   requestAnimationFrame(render);
 }
 
-function drawScene(projectionMatrix, cameraMatrix, textureMatrix, depth) {
+function drawScene(projectionMatrix, cameraMatrix, shadowmapTransformMatrix, depth) {
 
   const viewMatrix = utils.invertMatrix(cameraMatrix);
-
-  //var viewProjectionMatrix = utils.multiplyMatrices(projectionMatrix, viewMatrix);
   
   // Compute all the matrices for rendering
   objects.forEach(function (object) {
@@ -519,27 +528,39 @@ function drawScene(projectionMatrix, cameraMatrix, textureMatrix, depth) {
     
     gl.useProgram(program);
     if(!depth){
-      
+      var viewProjectionMatrix = utils.multiplyMatrices(projectionMatrix, utils.multiplyMatrices(viewMatrix, object.worldMatrix));
       var normalMatrix = utils.invertMatrix(utils.transposeMatrix(object.worldMatrix));
-      gl.uniformMatrix4fv(worldMatrixHandle, gl.FALSE, utils.transposeMatrix(object.worldMatrix));
-      gl.uniformMatrix4fv(viewMatrixHandle, gl.FALSE, utils.transposeMatrix(viewMatrix));
-      gl.uniformMatrix4fv(projectionMatrixHandle, gl.FALSE, utils.transposeMatrix(projectionMatrix));
+      
+      gl.uniformMatrix4fv(wvpMatrixHandle, gl.FALSE, utils.transposeMatrix(viewProjectionMatrix));
+      gl.uniformMatrix4fv(positionMatrixHandle, gl.FALSE, utils.transposeMatrix(object.worldMatrix));
       gl.uniformMatrix4fv(normalMatrixHandle, gl.FALSE, utils.transposeMatrix(normalMatrix));
-      gl.uniformMatrix4fv(textureMatrixHandle, gl.FALSE, utils.transposeMatrix(textureMatrix));
+      gl.uniformMatrix4fv(shadowMapMatrixHandle, gl.FALSE, utils.transposeMatrix(shadowmapTransformMatrix));
 
       gl.uniform3fv(ambientLightHandle, settings.ambientLight);
-      gl.uniform1f(biasHandle, bias);
-      gl.uniform3fv(lightDirectionHandle, directionalLight);
+      gl.uniform1f(toleranceHandle, settings.tolerance);
+      gl.uniform1f(shinessHandle, settings.shiness);
+      
+      gl.uniform3fv(cameraPositionHandle, settings.cameraPosition);
+      gl.uniform3fv(lightPositionHandle, settings.lightPosition);
+      gl.uniform3fv(lightColorHandle, settings.lightColor);
+      gl.uniform1f(lightTargetHandle, settings.lightTarget);
+      gl.uniform1f(lightDecayHandle, settings.lightDecay);
+      
+      var shadowToggle = 0.0;
+      if (settings.useShadow) shadowToggle = 1.0;
+      gl.uniform1f(useShadowHandle, shadowToggle);
+
   
       // Pass to the shader the texture
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.uniform1i(textHandle, 0);
+      gl.uniform1i(colorTextureHandle, 0);
 
       // Pass to the shader the texture
       gl.activeTexture(gl.TEXTURE1);
       gl.bindTexture(gl.TEXTURE_2D, depthTexture);
-      gl.uniform1i(projectedTextHandle, 0);
+      gl.uniform1i(depthTextureHandle, 0);
+    
     }
     else{
       gl.uniformMatrix4fv(colorWorldMatrixHandle, gl.FALSE, utils.transposeMatrix(object.worldMatrix));
@@ -595,17 +616,17 @@ async function init() {
   utils.resizeCanvasToDisplaySize(gl.canvas);
 
   // load the shaders from file
-  await utils.loadFiles([settings.shaderDir + 'model_vs.glsl', settings.shaderDir + 'model_fs.glsl'], function (shaderText) {
+  await utils.loadFiles([settings.shaderDir + 'final_vs.glsl', settings.shaderDir + 'final_fs.glsl'], function (shaderText) {
     var vertexShader = utils.createShader(gl, gl.VERTEX_SHADER, shaderText[0]);
     var fragmentShader = utils.createShader(gl, gl.FRAGMENT_SHADER, shaderText[1]);
 
-    program_3d = utils.createProgram(gl, vertexShader, fragmentShader);
+    scene_program = utils.createProgram(gl, vertexShader, fragmentShader);
   });
   
   await utils.loadFiles([settings.shaderDir + 'color_vs.glsl', settings.shaderDir + 'color_fs.glsl'], function (shaderText) {
     var vertexShader = utils.createShader(gl, gl.VERTEX_SHADER, shaderText[0]);
     var fragmentShader = utils.createShader(gl, gl.FRAGMENT_SHADER, shaderText[1]);
-    program_color = utils.createProgram(gl, vertexShader, fragmentShader);
+    depth_program = utils.createProgram(gl, vertexShader, fragmentShader);
   });
   
 
@@ -774,15 +795,17 @@ function onSliderChange(slider_value, id) {
     settings.cameraPosition[1] = gui_settings['cameraY'].value;
     settings.cameraPosition[2] = gui_settings['cameraZ'].value;
   }
-  settings.posLight[0] = gui_settings['posX'].value;
-  settings.posLight[1] = gui_settings['posY'].value;
-  settings.posLight[2] = gui_settings['posZ'].value;
-  settings.dirLightTheta = gui_settings['lightTheta'].value;
-  settings.dirLightPhi = gui_settings['lightPhi'].value;
+  settings.lightPosition[0] = gui_settings['posX'].value;
+  settings.lightPosition[1] = gui_settings['posY'].value;
+  settings.lightPosition[2] = gui_settings['posZ'].value;
+  settings.lightDecay = gui_settings['lightDecay'].value;
+  settings.lightTarget = gui_settings['lightTarget'].value;
   settings.fieldOfView = gui_settings['fieldOfView'].value;
   settings.ambientLight[0] = gui_settings['ambientLight'].value;
   settings.ambientLight[1] = gui_settings['ambientLight'].value;
   settings.ambientLight[2] = gui_settings['ambientLight'].value;
+  settings.shiness = gui_settings['shiness'].value;
+  settings.tolerance = gui_settings['tolerance'].value;
 
 }
 
@@ -1027,4 +1050,8 @@ function changeEnvironment() {
   var e = document.getElementById("env-menu");
   envFolder = e.value;
   loadEnvironment();
+}
+
+function toggleShadows(value){
+  settings.useShadow = value;
 }

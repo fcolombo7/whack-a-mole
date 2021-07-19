@@ -26,17 +26,22 @@ var settings = {
     ],
 
     /** lights */
-    dirLightTheta: 30,
-    dirLightPhi: 60,
-    directionalLightColor: [0.8, 0.8, 0.8],
-    posLight: [-1.0, 7.0, 10.0],
-    fieldOfView: 120,
-    ambientLight: [0.4, 0.4, 0.4],
+    lightColor: [0.8, 0.8, 0.8],
+    lightPosition: [0.0, 4.5, 0.5],
+    ambientLight: [0.5, 0.5, 0.5],
+    lightDecay: 1.0,
+    lightTarget: 2.0,
+    fieldOfView: 0,
+
+    /** materials and shadows*/
+    shiness: 50,
+    tolerance: 0.001,
 
     /** background */
     backgroundColor: [0.8, 0.8, 0.8, 1.0],
 
     useEnvironment:false,
+    useShadow:true
 }
 
 //Definition of the structure used as scene graph (example taken from webGLTutorial2)
@@ -107,13 +112,15 @@ const gui_settings = {
   'cameraX': new settingObj(50, false, settings.cameraPosition[0]),
   'cameraY': new settingObj(50, false, settings.cameraPosition[1]),
   'cameraZ': new settingObj(50, false, settings.cameraPosition[2]),
-  'posX': new settingObj(50, false, settings.posLight[0]),
-  'posY': new settingObj(50, false, settings.posLight[1]),
-  'posZ': new settingObj(50, false, settings.posLight[2]),
-  'lightTheta': new settingObj(180, true, settings.dirLightTheta),
-  'lightPhi': new settingObj(180, false, settings.dirLightPhi),
+  'posX': new settingObj(8, false, settings.lightPosition[0]),
+  'posY': new settingObj(8, false, settings.lightPosition[1]),
+  'posZ': new settingObj(8, false, settings.lightPosition[2]),
   'fieldOfView': new settingObj(180, true, settings.fieldOfView),
+  'lightDecay': new settingObj(5, true, settings.lightDecay),
+  'lightTarget': new settingObj(20, true, settings.lightTarget),
   'ambientLight': new settingObj(1, true, settings.ambientLight[0]),
+  'shiness': new settingObj(100, true, settings.shiness),
+  'tolerance': new settingObj(0.1, true, settings.tolerance),
 }
 
 function setDefaultSettings(){

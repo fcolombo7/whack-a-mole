@@ -189,16 +189,18 @@
       <div id="posZ_value" class="gui-slider-value">0</div>
       <input id="posZ_slider" class="gui-slider" type="range" min="-100" max="100" value="0" oninput="onSliderChange(this.value, 'posZ');">
     </div>
+
     <div class='gui-element'>
-      <div class="gui-slider-text">lightTheta</div>
-      <div id="lightTheta_value" class="gui-slider-value">0</div>
-      <input id="lightTheta_slider" class="gui-slider" type="range" min="-180" max="180" value="0" oninput="onSliderChange(this.value, 'lightTheta');">
+      <div class="gui-slider-text">lightDecay</div>
+      <div id="lightDecay_value" class="gui-slider-value">0</div>
+      <input id="lightDecay_slider" class="gui-slider" type="range" min="0" max="180" value="0" oninput="onSliderChange(this.value, 'lightDecay');">
     </div>
     <div class='gui-element'>
-      <div class="gui-slider-text">lightPhi</div>
-      <div id="lightPhi_value" class="gui-slider-value">0</div>
-      <input id="lightPhi_slider" class="gui-slider" type="range" min="-180" max="180" value="0" oninput="onSliderChange(this.value, 'lightPhi');">
+      <div class="gui-slider-text">lightTarget</div>
+      <div id="lightTarget_value" class="gui-slider-value">0</div>
+      <input id="lightTarget_slider" class="gui-slider" type="range" min="0" max="100" value="0" oninput="onSliderChange(this.value, 'lightTarget');">
     </div>
+
     <div class='gui-element'>
       <div class="gui-slider-text">fieldOfView</div>
       <div id="fieldOfView_value" class="gui-slider-value">0</div>
@@ -208,6 +210,20 @@
       <div class="gui-slider-text">ambientLight</div>
       <div id="ambientLight_value" class="gui-slider-value">0</div>
       <input id="ambientLight_slider" class="gui-slider" type="range" min="0" max="100" value="0" oninput="onSliderChange(this.value, 'ambientLight');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">shiness</div>
+      <div id="shiness_value" class="gui-slider-value">0</div>
+      <input id="shiness_slider" class="gui-slider" type="range" min="0" max="100" value="0" oninput="onSliderChange(this.value, 'shiness');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">tolerance</div>
+      <div id="tolerance_value" class="gui-slider-value">0</div>
+      <input id="tolerance_slider" class="gui-slider" type="range" min="0" max="100" value="0" oninput="onSliderChange(this.value, 'tolerance');">
+    </div>
+    <div class='gui-element'>
+      <div class="gui-slider-text">Shadows</div>
+      <input id="shadows_checkbox" class="gui_slider" type="checkbox" style="margin-left: 4px;" onclick="toggleShadows(this.checked)">
     </div>
   </div>
   <div id="end_game" style='display: none;'>
