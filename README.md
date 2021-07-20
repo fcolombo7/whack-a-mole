@@ -74,10 +74,11 @@ First define the base color of the pixel, which is retrieved by the texture.
 
 __Point light__
 ![\begin{align*}
-\mathrm{diffuse_point}(x) &= \boldsymbol{t} * \boldsymbol{l} * \mathit{clamp}(\frac{p - x}{|p - x|} \cdot n_x)
+\mathrm{diffuse_point}(x) &= \boldsymbol{t} * (\frac{g}{|p - x|})^\beta * \boldsymbol{l} * \mathit{clamp}(\frac{p - x}{|p - x|} \cdot n_x)
 \end{align*}
-](https://render.githubusercontent.com/render/math?math=%5Clarge+%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A%5Cmathrm%7Bdiffuse_point%7D%28x%29+%26%3D+%5Cboldsymbol%7Bt%7D+%2A+%5Cboldsymbol%7Bl%7D+%2A+%5Cmathit%7Bclamp%7D%28%5Cfrac%7Bp+-+x%7D%7B%7Cp+-+x%7C%7D+%5Ccdot+n_x%29%0A%5Cend%7Balign%2A%7D%0A)
+](https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A%5Cmathrm%7Bdiffuse_point%7D%28x%29+%26%3D+%5Cboldsymbol%7Bt%7D+%2A+%28%5Cfrac%7Bg%7D%7B%7Cp+-+x%7C%7D%29%5E%5Cbeta+%2A+%5Cboldsymbol%7Bl%7D+%2A+%5Cmathit%7Bclamp%7D%28%5Cfrac%7Bp+-+x%7D%7B%7Cp+-+x%7C%7D+%5Ccdot+n_x%29%0A%5Cend%7Balign%2A%7D%0A)
 Where __l__ is the point light color, __p__ the point light position and __n__ the normal relative to the pixel located in __x__.
+Notice the _decay_ and _target_ parameters (_g_ and _beta_) used to scale the contibution of the point light color.
 
 __Direct light__
 ![\begin{align*}
