@@ -41,17 +41,18 @@ void main() {
   vec3 diffuse = point_diffuse + direct_diffuse;
   
   // SPECULAR
+  vec3 specular_base_color = vec3(0.9, 0.9, 0.9);
   vec3 cameraDirNorm = normalize(u_cameraPosition - fs_position);
   // POINT
   float point_normalDotLight = max(0.0, dot(nNormal, lightDirNorm));
   vec3 point_halfVec = normalize(lightDirNorm + cameraDirNorm); 
-  vec3 point_spec_color = u_pointLightColor * max(sign(point_normalDotLight), 0.0);
+  vec3 point_spec_color = specular_base_color * max(sign(point_normalDotLight), 0.0);
   vec3 pointBlinn =  point_spec_color * pow(max(dot(nNormal, point_halfVec), 0.0), u_shininess);
   
   //DIRECT LIGHT
   float direct_normalDotLight = max(0.0, dot(nNormal, -directLightDirNorm));
   vec3 direct_halfVec = normalize(-directLightDirNorm + cameraDirNorm);
-  vec3 direct_spec_color = u_directLightColor * max(sign(direct_normalDotLight), 0.0);
+  vec3 direct_spec_color = specular_base_color * max(sign(direct_normalDotLight), 0.0);
   vec3 directBlinn =  direct_spec_color * pow(max(dot(nNormal, direct_halfVec), 0.0), u_shininess);
   
   vec3 specular = pointBlinn + directBlinn;

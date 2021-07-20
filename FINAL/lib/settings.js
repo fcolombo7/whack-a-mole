@@ -38,7 +38,7 @@ var settings = {
     //direct
     directLightTheta: 30,
     directLightPhi: 40,
-    directLightColor: [0.7, 0.7, 0.4],
+    directLightColor: [0.8, 0.8, 0.6],
     directLightDir: [null, null, null],
     //ambient
     ambientLight: [0.2, 0.2, 0.2],
