@@ -46,7 +46,9 @@ The user's point of view is determined by the camera.
 ## Scene graph
 
 Here a visual representation of the graph:
+
 ![scene graph](images/scene_graph.png)
+
 Each node of the graph is characterized by a shader program that will be used in the rendering stage, a local matrix, and a world matrix.
 The world matrix is iteratively computed from the root, by multiplying the local matrix of the current node by the world matrix of the parent node.
 
@@ -58,7 +60,9 @@ In our game the camera keeps track of the center position of the upper part of t
 # Light model and shaders implementations
 The scene is illuminated by 2 light sources: a direct light and a point light. Ambient light is used to cope with the pixels that are not subjected to any light source.
 Location/direction and other parameters can be adjusted through the UI.
+
 ![ui](images/ui.png)
+
 Among the shaders provided in the `shaders` folder the one used to render the objects in the scene is the one composed of `final_vs.glsl` and `final_fs.glsl`. The other pair of GLSL sources is the shader which deals with the representation of the skybox which simulates the surrounding environment.
 The BRDF model used for rendering is characterized by a _Lambert diffuse reflection_ and a _Blinn specular reflection_.
 Each of the two components can be sub-divided according to the contribution of the particular light source.
@@ -73,21 +77,26 @@ First define the base color of the pixel, which is retrieved by the texture.
 
 
 __Point light__
+
 ![\begin{align*}
 \mathrm{diffuse_point}(x) &= \boldsymbol{t} * (\frac{g}{|p - x|})^\beta * \boldsymbol{l} * \mathit{clamp}(\frac{p - x}{|p - x|} \cdot n_x)
 \end{align*}
 ](https://render.githubusercontent.com/render/math?math=%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A%5Cmathrm%7Bdiffuse_point%7D%28x%29+%26%3D+%5Cboldsymbol%7Bt%7D+%2A+%28%5Cfrac%7Bg%7D%7B%7Cp+-+x%7C%7D%29%5E%5Cbeta+%2A+%5Cboldsymbol%7Bl%7D+%2A+%5Cmathit%7Bclamp%7D%28%5Cfrac%7Bp+-+x%7D%7B%7Cp+-+x%7C%7D+%5Ccdot+n_x%29%0A%5Cend%7Balign%2A%7D%0A)
-Where __l__ is the point light color, __p__ the point light position and __n__ the normal relative to the pixel located in __x__.
+
+Where __l__ is the point light color, __p__ the point light position and __n__ the normal relative to the pixel located in __x__.  
 Notice the _decay_ and _target_ parameters (_g_ and _beta_) used to scale the contibution of the point light color.
 
 __Direct light__
+
 ![\begin{align*}
 \mathrm{diffuse_direct}(x) &= \boldsymbol{t} * \boldsymbol{l} * \mathit{clamp}(\boldsymbol{d} \cdot n_x)
 \end{align*}
 ](https://render.githubusercontent.com/render/math?math=%5Clarge+%5Cdisplaystyle+%5Cbegin%7Balign%2A%7D%0A%5Cmathrm%7Bdiffuse_direct%7D%28x%29+%26%3D+%5Cboldsymbol%7Bt%7D+%2A+%5Cboldsymbol%7Bl%7D+%2A+%5Cmathit%7Bclamp%7D%28%5Cboldsymbol%7Bd%7D+%5Ccdot+n_x%29%0A%5Cend%7Balign%2A%7D%0A)
+
 Where __l__ is the direct light color, __d__ the light direction and __n__ the normal relative to the pixel located in __x__.
 
 The overall _Lambert diffuse_ component of the BRDF is given by the sum of the 2 components:
+
 ![\begin{align*}
 \mathrm{diffuse}(x) &= \mathrm{diffuse_point}(x) + \mathrm{diffuse_direct}(x)
 \end{align*}
@@ -96,6 +105,7 @@ The overall _Lambert diffuse_ component of the BRDF is given by the sum of the 2
 ### Specular component
 The specular component of the BRDF even in this case can be split by considering the light source one at a time.
 In both cases the contribution is determined by the following expression:
+
 ![\begin{align*}
 \mathrm{specular}(x, lx, \omega_{r}) &= \boldsymbol{m}_{s} * \mathit{clamp}(\frac{lx + \omega_{r}}{|lx + \omega_{r}|} \cdot n_x) ^ \gamma
 \end{align*}
@@ -105,6 +115,7 @@ Where "omega" is the direction from which the object is seen, the exponent "gamm
 
 __Point light__
 In this case the ligth direction is computed as:
+
 ![\begin{align*}
 lx &= \frac{p - x}{|p - x|} 
 \end{align*}
@@ -112,7 +123,6 @@ lx &= \frac{p - x}{|p - x|}
 
 __Direct light__
 In this case the direct light is not computed but directly provided as input (__d__).
-
 The overall _Blinn specular reflection_ contribution is provided by the sum of the single component specific to the light source.
 
 
