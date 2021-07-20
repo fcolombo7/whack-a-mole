@@ -1,3 +1,7 @@
+/** 
+ * Script used to handle the settings of the environment and the lights
+ */
+
 var settings = {
     /** directories */
     baseDir:null,

@@ -1,7 +1,8 @@
-/** WEBGL */
+/** WEBGL script */
 var gl;
 
-var scene_program;  //glsl program used to render in the scene, including shadows
+//programs used to render the scene
+var scene_program; 
 var skybox_program;
 
 //MODEL
@@ -12,8 +13,8 @@ var vao_arr; //data structure containing all the VAO (one for each type of obj)
 var skybox_vao;
 
 //OBJECTS
-var objects;
-var holesWorldPositions;
+var objects; // list of objects to be rendered
+var holesWorldPositions; //structure containing the world positions of each hole in the cabinet
 
 //TEXTURES and BUFFERS
 var texture;
@@ -58,14 +59,18 @@ var deltaYMole = 0.6; //up&down difference
 // ------------------------------------------------------------------------------------------------------------------------------
 /** FUNCTIONS */
 
+/**
+ * Set the global states of the program (viewport size, background color)
+ */
 function setViewportAndCanvas() {
-  //SET Global states (viewport size, viewport background color, Depth test)
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   gl.clearColor(settings.backgroundColor[0], settings.backgroundColor[1], settings.backgroundColor[2], settings.backgroundColor[3]);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
 }
 
+/**
+ * Set up the attribute and uniforms of the shaders program
+ */
 function getAttributesAndUniforms() {
   //model shader
   positionAttributeLocation = gl.getAttribLocation(scene_program, "in_position");
@@ -93,6 +98,9 @@ function getAttributesAndUniforms() {
   skyboxVertPosAttr = gl.getAttribLocation(skyboxProgram, "in_position");
 }
 
+/**
+ * Build a vao for each mesh that is loaded and set up the texture
+ */
 function loadObj() {
   vao_arr = [];
   meshes.forEach(mesh => {
@@ -144,6 +152,9 @@ function loadObj() {
   };
 }
 
+/**
+ * Load the environment asset and set up the vao of the skybox
+ */
 function loadEnvironment() {
   var skyboxVertPos = new Float32Array(
     [
@@ -228,6 +239,9 @@ function loadEnvironment() {
 
 }
 
+/**
+ * Get the parameter of the lights from the UI and used to define the light parameters before the rendering
+ */
 function lightDefinition() {
   var dirLightTheta = -utils.degToRad(settings.directLightTheta);
   var dirLightPhi = -utils.degToRad(settings.directLightPhi);
@@ -236,9 +250,11 @@ function lightDefinition() {
   settings.directLightDir[2] = Math.cos(dirLightTheta) * Math.sin(dirLightPhi);
 }
 
-function sceneGraphDefinition() {
-  //Here it is defined the scene graph with all the objects of the scene.
-  //the function returns the root of the graph. 
+/**
+ * The function defines the scene graph with all the objects of the scene. 
+ * @returns the root of the scene graph 
+ */
+function sceneGraphDefinition() { 
   var cabinetSpace = new Node();
   cabinetSpace.localMatrix = utils.MakeWorld(0, 0, 0, 0, 0, 0, settings.scaleFactor);
 
@@ -383,33 +399,23 @@ function sceneGraphDefinition() {
     [hole4Pos[0], hole4Pos[1] - y_trasl, hole4Pos[2]],//4
     [hole5Pos[0], hole5Pos[1] - y_trasl, hole5Pos[2]],//5
   ]
-  sceneRoot = cabinetSpace;
+
+  return cabinetSpace;
 }
 
+/**
+ * Method used to set all the matrices before the rendering of the objects
+ */
 function setMatrices() {
   cameraMatrix = utils.LookAt(settings.cameraPosition, settings.target, settings.up);
   projectionMatrix = utils.MakePerspective(settings.fieldOfView, gl.canvas.width / gl.canvas.height, 1.0, 2000.0); // fow, aspect, near, far
   viewMatrix = utils.invertMatrix(cameraMatrix);
 }
 
-function drawSkybox(cameraMatrix, projectionMatrix) {
-  gl.useProgram(skyboxProgram);
-
-  gl.activeTexture(gl.TEXTURE0 + 3);
-  gl.bindTexture(gl.TEXTURE_CUBE_MAP, skyboxTexture);
-  gl.uniform1i(skyboxTexHandle, 3);
-
-  const viewMatrix = utils.invertMatrix(cameraMatrix);
-
-  var viewProjMat = utils.multiplyMatrices(projectionMatrix, viewMatrix);
-  inverseViewProjMatrix = utils.invertMatrix(viewProjMat);
-  gl.uniformMatrix4fv(inverseViewProjMatrixHandle, gl.FALSE, utils.transposeMatrix(inverseViewProjMatrix));
-
-  gl.bindVertexArray(skyboxVao);
-  gl.depthFunc(gl.LEQUAL);
-  gl.drawArrays(gl.TRIANGLES, 0, 1 * 6);
-}
-
+/**
+ * Render the scene.
+ * The function is executed each time a animation frame is requested
+ */
 function render() {
   lightDefinition();
   animate();
@@ -427,11 +433,37 @@ function render() {
   drawScene();
 
   if (settings.useEnvironment)
-    drawSkybox(cameraMatrix, projectionMatrix);
+    drawSkybox();
 
   requestAnimationFrame(render);
 }
 
+/**
+ * Function called by the rendering routine. 
+ * Draw the skybox representing the environment
+ */
+ function drawSkybox() {
+  gl.useProgram(skyboxProgram);
+
+  gl.activeTexture(gl.TEXTURE0 + 3);
+  gl.bindTexture(gl.TEXTURE_CUBE_MAP, skyboxTexture);
+  gl.uniform1i(skyboxTexHandle, 3);
+
+  const viewMatrix = utils.invertMatrix(cameraMatrix);
+
+  var viewProjMat = utils.multiplyMatrices(projectionMatrix, viewMatrix);
+  inverseViewProjMatrix = utils.invertMatrix(viewProjMat);
+  gl.uniformMatrix4fv(inverseViewProjMatrixHandle, gl.FALSE, utils.transposeMatrix(inverseViewProjMatrix));
+
+  gl.bindVertexArray(skyboxVao);
+  gl.depthFunc(gl.LEQUAL);
+  gl.drawArrays(gl.TRIANGLES, 0, 1 * 6);
+}
+
+/**
+ * Function called by the rendering routine. 
+ * Draw all the objects defined in the scene graph
+ */
 function drawScene() {
   // Compute all the matrices for rendering
   objects.forEach(function (object) {
@@ -455,7 +487,6 @@ function drawScene() {
     gl.uniform3fv(directLightColorHandle, settings.directLightColor);
     gl.uniform3fv(directLightDirectionHandle, settings.directLightDir);
 
-    console.log(settings.directLightColor, settings.directLightDir);
     // Pass to the shader the texture
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -467,6 +498,10 @@ function drawScene() {
 
 }
 
+/**
+ * Function called by the rendering routine.
+ * It updates the matrices related to the objects which are moving
+ */
 function animate() {
   //Here the transformation of each matrix
   animateCamera();
@@ -481,11 +516,14 @@ function main() {
     loadEnvironment();
   loadObj();
 
-  sceneGraphDefinition();
+  sceneRoot = sceneGraphDefinition();
 
   window.requestAnimationFrame(render);
 }
 
+/**
+ * entry point of the webgl script
+ */
 async function init() {
   var path = window.location.pathname;
   var page = path.split("/").pop();
@@ -540,7 +578,6 @@ async function init() {
   setDefaultSettings();
   /**
    * GAME INITIALIZATOIN 
-   * 
    */
   game = new Game();
   main();
@@ -702,7 +739,6 @@ function onStartButtonClick() {
   gui_settings['cameraZ'].lock();
 }
 
-
 // ------------------------------------------------------------------------------------------------------------------------------
 /**
  *  ANIMATIONS
@@ -712,7 +748,6 @@ function onStartButtonClick() {
 //CAMERA
 var lastCameraUpdateTime;
 var movingCamera = false;
-
 function animateCamera() {
   if (movingCamera) {
     var currentTime = (new Date).getTime();
@@ -758,7 +793,6 @@ function animateCamera() {
 
 //MOLES
 var lastMoleStatus;
-
 function animateMoles() {
   if (!game.isPlaying()) {
     /** If the fgame is not started put all the mole inside the cabinet */
@@ -934,8 +968,4 @@ function changeEnvironment() {
   var e = document.getElementById("env-menu");
   envFolder = e.value;
   loadEnvironment();
-}
-
-function toggleShadows(value) {
-  settings.useShadow = value;
 }
